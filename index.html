@@ -3,116 +3,201 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LifeSpire: 潛水員戴夫風 × 旅程尖塔決策對抗</title>
+  <title>LifeSpire: 旅程尖塔 | Roguelike 卡牌決策遊戲</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&family=Noto+Sans+TC:wght@400;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=DotGothic16&family=Press+Start+2P&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Noto+Sans+TC:wght@400;600;700;900&display=swap');
     
     * {
       user-select: none;
-      image-rendering: pixelated;
     }
-
     body {
-      font-family: 'DotGothic16', 'Noto Sans TC', sans-serif;
-      background-color: #111424;
-      /* 戴夫經典深海/壽司店暗夜掃描線 */
+      font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif;
+      background-color: #0c0a09;
       background-image: 
-        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%),
-        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-      background-size: 100% 4px, 6px 100%;
+        radial-gradient(circle at 50% 20%, rgba(180, 83, 9, 0.15) 0%, transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(136, 19, 55, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 10% 70%, rgba(30, 58, 138, 0.15) 0%, transparent 50%);
     }
-
-    .pixel-font {
-      font-family: 'Press Start 2P', monospace;
+    .spire-font {
+      font-family: 'Cinzel', serif;
     }
     .pixel-text {
       font-family: 'DotGothic16', sans-serif;
-      letter-spacing: 0.5px;
+    }
+    .pixel-font {
+      font-family: 'Press Start 2P', monospace;
     }
 
-    /* 像素方塊邊框 (8-bit 雙層粗黑描邊) */
-    .pixel-box {
-      border: 4px solid #1e293b;
-      box-shadow: 
-        inset -4px -4px 0px 0px #0f172a,
-        inset 4px 4px 0px 0px #475569,
-        0 8px 0px 0px #000;
+    /* 真正的殺戮尖塔風格 3D 弧形手牌 */
+    .spire-hand-container {
+      perspective: 1200px;
     }
-    .pixel-box-gold {
-      border: 4px solid #b45309;
-      background: #78350f;
-      box-shadow: 
-        inset -4px -4px 0px 0px #451a03,
-        inset 4px 4px 0px 0px #f59e0b,
-        0 8px 0px 0px #000;
-    }
-    .pixel-btn {
+    
+    .spire-card {
+      width: 175px;
+      height: 255px;
       position: relative;
-      border: 3px solid #000;
-      box-shadow: inset -3px -3px 0px 0px #334155, inset 3px 3px 0px 0px #94a3b8, 0 4px 0px 0px #000;
-      transition: transform 0.1s;
+      border-radius: 14px;
+      box-shadow: 0 14px 28px rgba(0,0,0,0.8), 0 0 10px rgba(0,0,0,0.5);
+      transition: all 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+      transform-origin: bottom center;
     }
-    .pixel-btn:active {
-      transform: translateY(3px);
-      box-shadow: inset -2px -2px 0px 0px #334155, inset 2px 2px 0px 0px #94a3b8, 0 1px 0px 0px #000;
+    .spire-card:hover {
+      transform: translateY(-55px) scale(1.22) rotate(0deg) !important;
+      z-index: 50 !important;
+      box-shadow: 0 25px 40px rgba(0,0,0,0.95), 0 0 30px rgba(251, 191, 36, 0.6);
+    }
+    .spire-card:active {
+      transform: translateY(-70px) scale(1.15) !important;
     }
 
-    /* 像素角色呼吸彈跳動畫 (Dave the Diver 待機 Idle) */
+    /* 卡牌邊框與材質紋理 */
+    .card-border-attack {
+      background: linear-gradient(145deg, #7f1d1d, #450a0a);
+      border: 3px solid #f87171;
+    }
+    .card-border-skill {
+      background: linear-gradient(145deg, #1e3a5f, #0f172a);
+      border: 3px solid #38bdf8;
+    }
+    .card-border-power {
+      background: linear-gradient(145deg, #4c1d95, #2e1065);
+      border: 3px solid #c084fc;
+    }
+    .card-border-gold {
+      background: linear-gradient(145deg, #78350f, #451a03);
+      border: 3px solid #fbbf24;
+    }
+    .card-border-curse {
+      background: linear-gradient(145deg, #27272a, #09090b);
+      border: 3px solid #71717a;
+    }
+
+    /* 卡牌能量水晶球 (STS 原汁原味水晶) */
+    .energy-orb {
+      width: 40px;
+      height: 40px;
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #fde047 0%, #d97706 60%, #78350f 100%);
+      border: 2px solid #fef08a;
+      box-shadow: 0 0 14px rgba(234, 179, 8, 0.8), inset 0 0 8px rgba(255,255,255,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cinzel', serif;
+      font-weight: 900;
+      font-size: 20px;
+      color: #1c1917;
+      text-shadow: 0 1px 2px rgba(255,255,255,0.6);
+      z-index: 10;
+    }
+
+    /* 戰鬥意圖浮標 (Monster Intent) */
+    .intent-float {
+      animation: float-intent 2.2s infinite ease-in-out;
+    }
+    @keyframes float-intent {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+
+    /* 戰場地表微光與木質邊框 */
+    .battle-board {
+      background: radial-gradient(ellipse at center, rgba(30, 27, 75, 0.6) 0%, rgba(10, 10, 15, 0.95) 100%);
+      box-shadow: inset 0 0 80px rgba(0,0,0,0.9), 0 0 30px rgba(0,0,0,0.8);
+      border: 3px solid #451a03;
+    }
+
+    /* 卡牌插畫視窗 */
+    .card-art-box {
+      height: 95px;
+      margin: 8px;
+      margin-top: 18px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid rgba(251, 191, 36, 0.4);
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+
+    /* 槽位引力效果 */
+    .slot-target {
+      transition: all 0.25s ease;
+      background: rgba(15, 23, 42, 0.7);
+      border: 2px dashed rgba(245, 158, 11, 0.4);
+    }
+    .slot-target:hover {
+      border: 2px solid #38bdf8;
+      background: rgba(56, 189, 248, 0.15);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+      transform: scale(1.02);
+    }
+
+    /* 飄字動畫 */
+    .damage-popup {
+      position: absolute;
+      animation: damage-up 1.2s forwards ease-out;
+      pointer-events: none;
+      font-weight: 900;
+      text-shadow: 0 0 10px rgba(0,0,0,0.9), 0 2px 4px black;
+      z-index: 100;
+    }
+    @keyframes damage-up {
+      0% { opacity: 0; transform: translateY(0) scale(0.6); }
+      20% { opacity: 1; transform: translateY(-20px) scale(1.3); }
+      80% { opacity: 1; transform: translateY(-50px) scale(1.1); }
+      100% { opacity: 0; transform: translateY(-75px) scale(0.9); }
+    }
+
+    /* ================================================= */
+    /* 專屬：潛水員戴夫風 8-Bit 像素反對對話框 (Dave Dialogue) */
+    /* ================================================= */
+    .dave-pixel-box {
+      image-rendering: pixelated;
+      background: #0f172a;
+      border: 4px solid #000;
+      box-shadow: 
+        inset -4px -4px 0px 0px #020617,
+        inset 4px 4px 0px 0px #38bdf8,
+        0 8px 16px rgba(0,0,0,0.8);
+      background-image: 
+        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+      background-size: 100% 4px, 6px 100%;
+    }
+
+    /* 像素角色彈跳動畫 (Dave idle bounce) */
     .pixel-idle {
-      animation: pixel-bounce 1.6s infinite steps(2);
+      animation: pixel-bounce 1.4s infinite steps(2);
+      image-rendering: pixelated;
     }
     @keyframes pixel-bounce {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-4px); }
     }
 
-    /* 婆婆憤怒拍桌/抗議動畫 */
+    /* 婆婆憤怒拍桌動畫 */
     .pixel-angry {
-      animation: angry-shake 0.35s infinite steps(4);
+      animation: pixel-shake 0.35s infinite steps(4);
+      image-rendering: pixelated;
     }
-    @keyframes angry-shake {
-      0% { transform: translate(0, 0) scale(1); }
-      25% { transform: translate(-3px, -2px) scale(1.05); }
-      50% { transform: translate(3px, 1px) scale(1.03); }
-      75% { transform: translate(-2px, 2px) scale(1.04); }
-      100% { transform: translate(0, 0) scale(1); }
-    }
-
-    /* 像素對話框箭頭跳動 */
-    .dialog-arrow {
-      animation: blink 0.8s infinite steps(1);
-    }
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
+    @keyframes pixel-shake {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(-3px, -2px); }
+      50% { transform: translate(3px, 1px); }
+      75% { transform: translate(-2px, 2px); }
+      100% { transform: translate(0, 0); }
     }
 
-    /* 像素風格卡牌手牌 */
-    .pixel-card {
-      width: 170px;
-      height: 245px;
-      border: 4px solid #000;
-      box-shadow: 
-        inset -3px -3px 0px 0px #1e293b,
-        inset 3px 3px 0px 0px #64748b,
-        0 6px 0px 0px #000;
-      cursor: pointer;
-      transition: all 0.15s steps(2);
-      transform-origin: bottom center;
-    }
-    .pixel-card:hover {
-      transform: translateY(-28px) scale(1.08) !important;
-      z-index: 50 !important;
-      box-shadow: 
-        inset -4px -4px 0px 0px #b45309,
-        inset 4px 4px 0px 0px #fde047,
-        0 14px 0px 0px #000 !important;
-    }
-
-    /* 戴夫風大魄力撞擊字 (OBJECTION!! 閃爍) */
-    .objection-banner {
+    /* 戴夫大魄力 OBJECTION!! 撞擊動畫 */
+    .objection-badge-anim {
       animation: objection-slam 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
     @keyframes objection-slam {
@@ -121,184 +206,225 @@
       100% { transform: scale(1) rotate(-3deg); opacity: 1; }
     }
 
-    /* 像素方塊血量條 */
-    .pixel-bar-bg {
-      border: 3px solid #000;
-      box-shadow: inset 0 2px 0 0 rgba(0,0,0,0.5);
+    /* 像素光標跳動 */
+    .pixel-cursor-blink {
+      animation: cursor-blink 0.8s infinite steps(1);
+    }
+    @keyframes cursor-blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
     }
   </style>
 </head>
-<body class="text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden">
+<body class="text-amber-100 min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-amber-500 selection:text-black">
 
-  <!-- ============================================== -->
-  <!-- 頂部：8-Bit 像素 HUD (戴夫與壽司店狀態) -->
-  <!-- ============================================== -->
-  <header class="bg-slate-950/95 border-b-4 border-black px-4 py-2.5 flex items-center justify-between z-40 shadow-xl">
+  <!-- =============================== -->
+  <!-- 頂部：STS 經典戰鬥頂欄 (Top Bar) -->
+  <!-- =============================== -->
+  <header class="bg-black/90 border-b-2 border-amber-900/60 px-6 py-2.5 flex items-center justify-between z-40 backdrop-blur shadow-2xl">
     
-    <!-- 左側：戴夫社畜頭像與體力/精神條 -->
-    <div class="flex items-center gap-4">
-      <div class="flex items-center gap-2">
-        <!-- 像素戴夫頭像 -->
-        <div class="w-12 h-12 bg-amber-900 border-2 border-black pixel-btn flex items-center justify-center text-2xl relative pixel-idle">
-          👨‍💻
-          <span class="absolute -bottom-1 -right-1 bg-sky-500 text-black font-black text-[9px] px-1 border border-black font-mono">YOU</span>
+    <!-- 左側：玩家血量條與金幣 -->
+    <div class="flex items-center gap-6">
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-700 to-amber-400 p-0.5 shadow-lg border border-amber-300">
+            <div class="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center text-2xl" id="player-avatar">
+              💼
+            </div>
+          </div>
+          <div class="absolute -bottom-2 -right-2 bg-sky-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-black border-2 border-slate-900 shadow font-mono" id="player-block" title="話術護甲">
+            12
+          </div>
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <span class="text-xs font-black text-amber-300 pixel-text">社畜策劃 (戴夫)</span>
-            <span class="text-[9px] bg-red-950 text-red-300 px-1 border border-red-700 font-mono">ROUND <span id="round-number">1</span></span>
+            <span class="font-bold text-sm text-white" id="player-name">社畜旅遊策劃 (Dave)</span>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-700 font-bold" id="mode-badge">尖塔階梯 FLOOR 2</span>
           </div>
-          <!-- 理智 HP (像素心心) -->
-          <div class="flex items-center gap-1.5 mt-1">
-            <span class="text-xs text-rose-500 font-black">HP</span>
-            <div class="w-28 h-3.5 bg-black pixel-bar-bg rounded-none p-0.5">
-              <div id="dave-hp-fill" class="h-full bg-gradient-to-r from-rose-600 to-rose-400 transition-all duration-300" style="width: 80%"></div>
+          <!-- 玩家血量條 -->
+          <div class="flex items-center gap-2 mt-1">
+            <i class="fa-solid fa-heart-pulse text-rose-500 text-xs"></i>
+            <div class="w-32 bg-slate-950 rounded-full h-3 border border-slate-700 overflow-hidden relative shadow-inner">
+              <div id="player-hp-bar" class="h-full bg-gradient-to-r from-rose-600 to-red-400 transition-all duration-300" style="width: 78%"></div>
             </div>
-            <span class="text-[10px] font-mono text-rose-300 font-black" id="dave-hp-text">80/100</span>
+            <span class="text-xs font-mono font-black text-rose-300" id="player-hp-text">78 / 100</span>
           </div>
         </div>
       </div>
 
-      <div class="h-8 w-1 bg-slate-800"></div>
+      <div class="h-8 w-px bg-amber-900/40 hidden md:block"></div>
 
-      <!-- 金幣與能量 -->
-      <div class="flex items-center gap-3 text-xs font-mono">
-        <div class="bg-black px-2.5 py-1 border-2 border-amber-600/80 flex items-center gap-1.5 text-amber-300">
-          <i class="fa-solid fa-coins text-amber-400 text-xs"></i>
-          <span id="dave-gold">¥38,500</span>
+      <!-- 金幣與遺物 -->
+      <div class="hidden sm:flex items-center gap-4 text-xs font-mono">
+        <div class="flex items-center gap-1.5 bg-black/60 px-3 py-1.5 rounded-lg border border-amber-500/30">
+          <i class="fa-solid fa-coins text-amber-400 text-sm animate-pulse"></i>
+          <span class="text-amber-200 font-bold text-sm" id="player-gold">¥42,000</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-amber-950/80 border border-amber-600/60 flex items-center justify-center text-sm shadow hover:scale-110 transition cursor-pointer" title="【免死公文】：首次被退件免扣精神血量">📜</div>
+          <div class="w-7 h-7 rounded-lg bg-indigo-950/80 border border-indigo-500/60 flex items-center justify-center text-sm shadow hover:scale-110 transition cursor-pointer" title="【無情小黃鈴】：計程車卡費用減半">🚖</div>
         </div>
       </div>
     </div>
 
-    <!-- 中間：關卡名稱 (8-Bit 像素標題) -->
-    <div class="hidden md:flex flex-col items-center">
-      <div class="text-[10px] text-amber-400 pixel-font tracking-widest">STAGE 2: KYOTO-TOKYO</div>
-      <div class="text-xs text-white pixel-text font-black flex items-center gap-1">
-        <span class="w-2 h-2 bg-emerald-400 inline-block animate-ping"></span>
-        <span>【刁難婆媳家族】接待會客室</span>
-      </div>
+    <!-- 中間：模式切換 -->
+    <div class="flex items-center bg-black/80 border-2 border-amber-700/60 p-1 rounded-xl shadow-2xl">
+      <button id="btn-solo-toggle" onclick="setSpireMode('solo')" class="px-3.5 py-1.5 rounded-lg text-xs font-black transition flex items-center gap-1.5 bg-gradient-to-r from-amber-600 to-amber-500 text-slate-950 shadow-lg">
+        <i class="fa-solid fa-briefcase"></i>
+        <span>🏢 業績尖塔 (單人)</span>
+      </button>
+      <button id="btn-multi-toggle" onclick="setSpireMode('multi')" class="px-3.5 py-1.5 rounded-lg text-xs font-black transition flex items-center gap-1.5 text-amber-300/70 hover:text-white">
+        <i class="fa-solid fa-users-slash"></i>
+        <span>😈 搞事天團 (多人半合作)</span>
+      </button>
     </div>
 
-    <!-- 右側：重新對局按鈕 -->
-    <button onclick="restartDaveBattle()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 pixel-btn text-xs text-slate-300 flex items-center gap-1">
-      <i class="fa-solid fa-rotate-left"></i> 重置對談
-    </button>
+    <!-- 右側：抽牌庫存與重置 -->
+    <div class="flex items-center gap-3 text-xs">
+      <button onclick="restartBattle()" class="p-2 rounded-lg bg-amber-950/60 hover:bg-amber-900 border border-amber-700 text-amber-300 transition" title="重新洗牌發牌">
+        <i class="fa-solid fa-rotate"></i>
+      </button>
+    </div>
   </header>
 
 
   <!-- ============================================== -->
-  <!-- 主畫面：戴夫風「會客室切鏡」像素對峙場景 (Dave's Office) -->
+  <!-- 中間：殺戮尖塔戰場 + 戴夫風 8-Bit 反對對話特寫場景 -->
   <!-- ============================================== -->
-  <main class="flex-1 flex flex-col justify-between p-3 max-w-6xl mx-auto w-full relative">
+  <main class="flex-1 flex flex-col justify-between p-4 max-w-7xl mx-auto w-full relative">
 
-    <!-- 核心像素場景舞台 (8-bit Office/Sushi Room Canvas) -->
-    <div class="pixel-box bg-slate-900/90 rounded-none p-4 relative flex flex-col justify-between min-h-[320px] mb-2 overflow-hidden border-4 border-black">
+    <!-- 戰場上半部：怪物戰場 + 戴夫風 8-Bit 反對對話窗 -->
+    <div class="battle-board rounded-3xl p-5 relative flex flex-col justify-between min-h-[350px] border-2 border-amber-950/80 mb-3 overflow-hidden">
       
-      <!-- 像素磚牆與障子門背景裝飾 (Pixel Interior) -->
-      <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: repeating-linear-gradient(0deg, #000 0px, #000 2px, transparent 2px, transparent 16px), repeating-linear-gradient(90deg, #000 0px, #000 2px, transparent 2px, transparent 32px);"></div>
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(245,158,11,0.08),transparent_60%)] pointer-events-none"></div>
 
-      <!-- 上方：客戶狀態與滿意度條 -->
-      <div class="flex justify-between items-start z-10">
-        <!-- 客戶頭銜 -->
-        <div class="flex items-center gap-2 bg-black/80 border-2 border-amber-600/80 px-3 py-1.5">
-          <span class="text-base">👵</span>
-          <div>
-            <div class="text-xs font-black text-amber-300 pixel-text">難搞甲方：林氏控制狂婆婆</div>
-            <div class="text-[9px] text-slate-400">弱點：愛慕虛榮、尊榮感、怕走路痛風</div>
-          </div>
+      <!-- 頂部：回合提示與意圖警示 -->
+      <div class="flex justify-between items-start z-10 mb-2">
+        <div class="bg-black/70 border border-amber-800/60 px-3.5 py-1.5 rounded-xl flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <span class="text-xs font-bold text-amber-200 spire-font tracking-wider" id="turn-banner">ROUND <span id="round-num">1</span>: 甲方審查質詢階段</span>
         </div>
 
-        <!-- 滿意度進度條 (達成 100% 簽約過關) -->
-        <div class="bg-black/80 border-2 border-slate-700 p-2 min-w-[220px]">
-          <div class="flex justify-between text-[10px] font-black text-amber-300 mb-1">
-            <span>簽約意向 (成交需 80%):</span>
-            <span class="font-mono text-emerald-400" id="satisfaction-text">20 / 100</span>
-          </div>
-          <div class="w-full h-3 bg-slate-950 pixel-bar-bg p-0.5">
-            <div id="satisfaction-fill" class="h-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all duration-500" style="width: 20%"></div>
+        <div class="flex flex-col items-end intent-float" id="enemy-intent-box">
+          <div class="flex items-center gap-2 bg-red-950/90 border-2 border-red-500/80 px-3.5 py-1.5 rounded-xl shadow-2xl">
+            <span class="text-lg">💢</span>
+            <div>
+              <div class="text-[11px] font-black text-rose-300 uppercase tracking-wider">甲方痛風預警</div>
+              <div class="text-xs font-bold text-white">若步數大於 5000，扣減 25 精神 HP！</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- 中央舞台：像素角色特寫與「反對質問」震撼彈出 -->
-      <div class="flex flex-col md:flex-row items-center justify-around my-2 z-10 gap-4">
+      <!-- =============================================================== -->
+      <!-- 🌟 核心亮點：潛水員戴夫 (Dave the Diver) 風格 8-Bit 像素反對對話場景 🌟 -->
+      <!-- =============================================================== -->
+      <div class="dave-pixel-box rounded-2xl p-4 my-2 z-20 relative border-4 border-black shadow-2xl">
         
-        <!-- 左邊：社畜戴夫 (提案策劃) -->
-        <div class="flex flex-col items-center">
-          <div class="w-20 h-20 bg-slate-800 border-4 border-black pixel-box flex items-center justify-center text-4xl pixel-idle shadow-xl relative" id="dave-sprite">
-            👨‍💻
-          </div>
-          <span class="text-xs font-black text-slate-300 pixel-text mt-1 bg-black px-2 border border-slate-700">社畜策劃</span>
+        <!-- 大魄力 OBJECTION!! 撞擊橫幅 -->
+        <div id="objection-badge" class="absolute -top-5 left-1/2 -translate-x-1/2 bg-red-600 text-yellow-300 border-4 border-black px-4 py-1 text-xs font-black pixel-font z-30 shadow-2xl objection-badge-anim">
+          ⚡ OBJECTION !! 反對質問 !!
         </div>
 
-        <!-- 中間：對峙激辯對話框 (Dave The Diver Pixel Dialogue Box) -->
-        <div class="flex-1 max-w-xl mx-2 relative">
+        <div class="flex flex-col sm:flex-row items-center gap-4">
           
-          <!-- 大魄力 OBJECTION!! 爆發橫幅 (觸發反對時跳出) -->
-          <div id="objection-badge" class="hidden absolute -top-8 left-1/2 -translate-x-1/2 bg-red-600 text-yellow-300 border-4 border-black px-4 py-1 text-base font-black pixel-font z-30 shadow-2xl objection-banner">
-            ⚡ OBJECTION !! 反對質問 !!
+          <!-- 左側：8-bit 像素頭像 (動態切換：憤怒拍桌 vs 滿意點頭) -->
+          <div class="flex flex-col items-center">
+            <div class="w-16 h-16 bg-slate-900 border-4 border-black flex items-center justify-center text-3xl shadow-xl relative" id="pixel-avatar-box">
+              <span id="pixel-avatar-emoji" class="pixel-angry">👵💢</span>
+            </div>
+            <span class="text-[10px] font-black text-rose-400 pixel-text mt-1 bg-black px-2 border border-rose-900/80" id="pixel-speaker-name">
+              控制狂婆婆
+            </span>
           </div>
 
-          <div class="bg-black border-4 border-amber-600/90 p-3.5 relative shadow-2xl">
-            <!-- 發言者名牌 -->
-            <div class="absolute -top-3.5 left-4 bg-amber-500 text-black px-2 py-0.5 text-[10px] font-black pixel-font border-2 border-black" id="dialogue-speaker">
-              婆婆 (反對抗議)
-            </div>
-            
-            <!-- 像素對話內文 (打字機效果感) -->
-            <p class="text-xs sm:text-sm text-amber-100 pixel-text leading-relaxed mt-1 min-h-[46px]" id="dialogue-text">
+          <!-- 右側：像素對話文字框 (戴夫式幽默碎念) -->
+          <div class="flex-1 bg-black/90 border-2 border-slate-700 p-3 min-h-[70px] flex flex-col justify-between">
+            <p class="text-xs sm:text-sm text-amber-200 pixel-text leading-relaxed tracking-wide" id="pixel-dialogue-text">
               「你剛剛提議下午去澀谷十字路口跟逛街？！我兒子平常上班已經累得要死，你還要我們走一萬步？你到底懂不懂排行程啊？！」
             </p>
-
-            <div class="flex justify-between items-center mt-2 pt-1 border-t-2 border-slate-900 text-[10px] text-amber-400 font-mono">
-              <span id="dialogue-hint">👉 請從下方打出卡牌進行【反對化解】或【話術反駁】！</span>
-              <span class="dialog-arrow font-black text-amber-300">▼</span>
+            
+            <div class="flex justify-between items-center mt-2 pt-1 border-t border-slate-800 text-[10px] text-sky-400 font-mono">
+              <span id="pixel-dialogue-hint">👉 婆婆強烈質疑中！請打出對應卡牌進行【反駁化解】！</span>
+              <span class="pixel-cursor-blink text-amber-300 font-black">▼</span>
             </div>
           </div>
-        </div>
 
-        <!-- 右邊：憤怒甲方婆婆 (敵方立繪) -->
-        <div class="flex flex-col items-center">
-          <div class="w-20 h-20 bg-amber-950 border-4 border-black pixel-box flex items-center justify-center text-4xl shadow-xl relative" id="granny-sprite">
-            👵💢
-          </div>
-          <span class="text-xs font-black text-rose-300 pixel-text mt-1 bg-black px-2 border border-rose-800">控制狂婆婆</span>
         </div>
 
       </div>
 
-      <!-- 下方：時間軸 Commit 槽位狀態 (今日提案時間軸) -->
-      <div class="z-10 mt-1 pt-2 border-t-2 border-slate-800">
-        <div class="flex items-center justify-between mb-1.5">
-          <span class="text-[10px] font-black text-amber-300 pixel-font tracking-wider">JOURNEY SLOTS (提案主線)</span>
-          <span class="text-[10px] text-slate-400 pixel-text" id="slot-status-hint">當前爭議時段：SLOT #3 下午</span>
+      <!-- 戰場下半部：4 個戰術時空槽位 (Timeline Journey Slots) -->
+      <div class="z-10 mt-2 pt-2 border-t border-amber-950/70">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-code-commit text-amber-400"></i>
+            <span class="text-xs font-black text-amber-300 uppercase tracking-wider spire-font">今日時間軸掛載槽位 (Journey Slots)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <!-- 滿意度條 -->
+            <div class="flex items-center gap-2 bg-black/60 px-3 py-1 rounded-lg border border-amber-900">
+              <span class="text-xs text-amber-300 font-bold">簽約意向:</span>
+              <span class="font-mono text-emerald-400 font-black text-xs" id="enemy-hp-text">35 / 100</span>
+            </div>
+            <button onclick="instantRebase()" class="px-2.5 py-1 rounded-lg bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-500/50 text-[11px] font-black transition flex items-center gap-1">
+              <i class="fa-solid fa-shuffle"></i> 一鍵 Rebase 重排
+            </button>
+          </div>
         </div>
 
-        <div class="grid grid-cols-4 gap-2">
+        <!-- 4 個槽位卡槽 -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+          
           <!-- 槽位 1 -->
-          <div class="bg-black/70 border-2 border-slate-700 p-2 text-center" id="slot-box-1">
-            <div class="text-[9px] text-amber-400 font-mono font-bold">SLOT 1 上午</div>
-            <div class="text-xs font-black text-white mt-0.5 truncate" id="slot-name-1">🏮 淺草雷門</div>
-            <div class="text-[9px] text-emerald-400 font-mono">已採納 ✓</div>
+          <div id="slot-1" onclick="clearSpecificSlot(1)" class="slot-target rounded-xl p-2.5 min-h-[88px] flex flex-col justify-between cursor-pointer relative group">
+            <div class="flex justify-between items-center text-[10px] font-mono text-amber-400/80">
+              <span class="font-bold">SLOT 1【上午 10:00】</span>
+              <span class="group-hover:text-rose-400 transition">✕ 移除</span>
+            </div>
+            <div id="slot-1-content" class="text-center py-1 text-xs text-slate-500 font-medium">
+              點擊下方卡牌裝備
+            </div>
+            <div class="text-[9px] text-slate-600 text-right">Commit #01</div>
           </div>
+
           <!-- 槽位 2 -->
-          <div class="bg-black/70 border-2 border-slate-700 p-2 text-center" id="slot-box-2">
-            <div class="text-[9px] text-amber-400 font-mono font-bold">SLOT 2 午餐</div>
-            <div class="text-xs font-black text-white mt-0.5 truncate" id="slot-name-2">🍱 上野鰻魚飯</div>
-            <div class="text-[9px] text-emerald-400 font-mono">已採納 ✓</div>
+          <div id="slot-2" onclick="clearSpecificSlot(2)" class="slot-target rounded-xl p-2.5 min-h-[88px] flex flex-col justify-between cursor-pointer relative group">
+            <div class="flex justify-between items-center text-[10px] font-mono text-amber-400/80">
+              <span class="font-bold">SLOT 2【午餐 12:30】</span>
+              <span class="group-hover:text-rose-400 transition">✕ 移除</span>
+            </div>
+            <div id="slot-2-content" class="text-center py-1 text-xs text-slate-500 font-medium">
+              點擊下方卡牌裝備
+            </div>
+            <div class="text-[9px] text-slate-600 text-right">Commit #02</div>
           </div>
-          <!-- 槽位 3 (爭議爭端中) -->
-          <div class="bg-red-950/40 border-2 border-red-500 p-2 text-center animate-pulse" id="slot-box-3">
-            <div class="text-[9px] text-rose-400 font-mono font-bold">SLOT 3 下午 (爭議!)</div>
-            <div class="text-xs font-black text-rose-300 mt-0.5 truncate" id="slot-name-3">⚠️ 澀谷暴走街</div>
-            <div class="text-[9px] text-rose-400 font-mono">婆婆強烈反對 ✕</div>
+
+          <!-- 槽位 3 (爭議時段) -->
+          <div id="slot-3" onclick="clearSpecificSlot(3)" class="slot-target rounded-xl p-2.5 min-h-[88px] flex flex-col justify-between cursor-pointer relative group border-rose-500/80 bg-rose-950/20">
+            <div class="flex justify-between items-center text-[10px] font-mono text-rose-400">
+              <span class="font-bold">SLOT 3【下午 15:00】(爭端)</span>
+              <span class="text-rose-400">⚠️ 質問中</span>
+            </div>
+            <div id="slot-3-content" class="text-center py-1 text-xs text-rose-300 font-bold">
+              🛍️ 澀谷十字路口狂暴
+            </div>
+            <div class="text-[9px] text-rose-400 text-right">婆婆痛風抗議 ✕</div>
           </div>
+
           <!-- 槽位 4 (Hard Lock) -->
-          <div class="bg-black/70 border-2 border-purple-500/80 p-2 text-center" id="slot-box-4">
-            <div class="text-[9px] text-purple-400 font-mono font-bold">SLOT 4 晚餐 (鎖定)</div>
-            <div class="text-xs font-black text-white mt-0.5 truncate">👑 敘敘苑燒肉</div>
-            <div class="text-[9px] text-purple-300 font-mono">不可取消 🔒</div>
+          <div id="slot-4" class="rounded-xl p-2.5 min-h-[88px] flex flex-col justify-between border-2 border-rose-500/60 bg-rose-950/30 relative">
+            <div class="flex justify-between items-center text-[10px]">
+              <span class="font-bold text-rose-400">SLOT 4【晚餐 18:30】</span>
+              <span class="text-rose-300 font-black"><i class="fa-solid fa-lock mr-1"></i>HARD LOCK</span>
+            </div>
+            <div class="py-1">
+              <h5 class="font-bold text-xs text-white">晴空塔 30F 敘敘苑燒肉</h5>
+              <p class="text-[10px] text-rose-300/80">不可取消・已全額付款</p>
+            </div>
+            <div class="text-[9px] text-emerald-400 font-bold text-right">+25 滿足底分</div>
           </div>
+
         </div>
       </div>
 
@@ -306,109 +432,123 @@
 
 
     <!-- ============================================== -->
-    <!-- 下方：8-Bit 像素卡牌庫 (Pixel Deck) -->
+    <!-- 戰場下半部：STS 經典 3D 扇形手牌區 (Card Hand) -->
     <!-- ============================================== -->
-    <div class="relative pt-2">
-      
-      <!-- 行動能量與出牌指令 -->
-      <div class="flex items-center justify-between px-2 mb-2">
-        <div class="flex items-center gap-2">
-          <!-- 像素能量點 (Dave Energy Coins) -->
-          <div class="flex items-center gap-1 bg-black border-2 border-amber-500 px-3 py-1">
-            <span class="text-xs font-black text-amber-300 pixel-font">ENERGY:</span>
-            <div class="flex gap-1" id="energy-coins-box">
-              <span class="text-amber-400 text-sm">🪙</span>
-              <span class="text-amber-400 text-sm">🪙</span>
-              <span class="text-amber-400 text-sm">🪙</span>
+    <div class="relative pt-4 pb-2">
+
+      <!-- 左側：剩餘能量球 (STS Energy Orb) 與結束回合按鈕 -->
+      <div class="flex items-center justify-between px-4 mb-2 z-20">
+        
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-600 via-amber-400 to-yellow-200 border-4 border-amber-200 shadow-[0_0_30px_rgba(245,158,11,0.8)] flex items-center justify-center text-slate-950 font-black text-2xl spire-font">
+              <span id="current-energy">3</span><span class="text-sm text-slate-800">/3</span>
             </div>
           </div>
-          <span class="text-xs text-amber-200/70 pixel-text hidden sm:inline">打出手牌化解質問或發動 Git Rebase！</span>
+          <div>
+            <div class="text-xs font-black text-amber-200 uppercase tracking-wider spire-font">行動能量 (ENERGY)</div>
+            <div class="text-[11px] text-slate-400">出牌進行【反對化解】或【動線推進】</div>
+          </div>
         </div>
 
-        <!-- 一鍵 Rebase 神級動線 -->
-        <button onclick="playPixelRebase()" class="px-3.5 py-1.5 bg-indigo-900 hover:bg-indigo-800 border-2 border-black pixel-btn text-xs font-black text-indigo-200 flex items-center gap-1.5">
-          <i class="fa-solid fa-code-merge text-amber-400"></i>
-          <span>GIT REBASE 拯救重排</span>
+        <button id="btn-end-turn" onclick="executeEndTurn()" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-600 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-400 text-slate-950 font-black text-sm uppercase tracking-wider shadow-[0_0_25px_rgba(245,158,11,0.6)] hover:scale-105 active:scale-95 transition flex items-center gap-2 border-2 border-yellow-200">
+          <i class="fa-solid fa-play"></i>
+          <span>結束回合 / 提交方案</span>
         </button>
+
       </div>
 
-      <!-- 像素卡牌扇形手牌區 -->
-      <div class="flex justify-center items-end min-h-[255px] gap-2 px-2 overflow-x-auto pb-2" id="pixel-hand-container">
+      <!-- 弧形排列手牌庫 (Slay the Spire Fan-Out Hand) -->
+      <div class="spire-hand-container flex justify-center items-end min-h-[270px] relative overflow-visible px-4" id="cards-hand-wrapper">
         
-        <!-- 卡牌 1：話術反駁【這叫私房深度走讀】 -->
-        <div onclick="playPixelCard('talk_defense')" class="pixel-card bg-slate-900 hover:border-sky-400 flex flex-col justify-between p-2">
-          <div>
-            <div class="flex justify-between items-center text-[10px] border-b-2 border-black pb-1 mb-1 font-mono">
-              <span class="bg-amber-400 text-black px-1 font-black">1 費</span>
-              <span class="text-sky-300 font-bold">[防禦話術]</span>
-            </div>
-            <div class="h-20 bg-slate-800 border-2 border-black mb-1 flex items-center justify-center text-3xl">
-              🗣️📜
-            </div>
-            <h5 class="text-xs font-black text-white pixel-text leading-tight">「這叫私房深度走讀」</h5>
-            <p class="text-[10px] text-slate-300 pixel-text mt-1 leading-snug">
-              化解痛風步數抗議！<br>
-              <strong class="text-sky-300 font-bold">反駁成功：</strong>理智 HP +15，婆婆氣焰 -20。
+        <!-- 卡牌 1：淺草雷門人力車 (攻擊/滿足) -->
+        <div onclick="playCardToTimeline(0)" class="spire-card card-border-attack" style="transform: rotate(-10deg) translateY(12px);">
+          <div class="energy-orb">1</div>
+          <div class="card-art-box" style="background-image: url('https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=400&q=80');">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+            <span class="absolute bottom-1 left-2 text-[10px] font-black text-amber-300">[淺草] 景點</span>
+          </div>
+          <div class="px-2.5 py-1 text-center">
+            <h4 class="font-black text-xs text-white">🏮 淺草人力車巡禮</h4>
+            <div class="h-0.5 bg-amber-500/40 my-1"></div>
+            <p class="text-[10px] text-amber-100 leading-tight">
+              造成 <strong class="text-emerald-400 font-bold">+25 滿足度</strong>。<br>
+              零步行！化解痛風抗性。
             </p>
           </div>
-          <div class="text-[9px] text-amber-400 text-center font-mono border-t border-slate-800 pt-0.5">TALK DEFENSE</div>
+          <div class="absolute bottom-1.5 inset-x-0 text-center text-[9px] text-amber-400/80 font-mono">ATTACK / 提案</div>
         </div>
 
-        <!-- 卡牌 2：尊榮包車【全天 Alphard 尊榮接送】 -->
-        <div onclick="playPixelCard('alphard')" class="pixel-card bg-amber-950 hover:border-amber-400 flex flex-col justify-between p-2">
-          <div>
-            <div class="flex justify-between items-center text-[10px] border-b-2 border-black pb-1 mb-1 font-mono">
-              <span class="bg-amber-400 text-black px-1 font-black">2 費</span>
-              <span class="text-amber-300 font-bold">[尊榮豪華]</span>
-            </div>
-            <div class="h-20 bg-black border-2 border-black mb-1 flex items-center justify-center text-3xl">
-              🚐✨
-            </div>
-            <h5 class="text-xs font-black text-white pixel-text leading-tight">Alphard 私人包車直達</h5>
-            <p class="text-[10px] text-slate-300 pixel-text mt-1 leading-snug">
-              直接跳過走路上樓梯！<br>
-              <strong class="text-emerald-400 font-bold">直接斬殺：</strong>婆婆滿足度狂飆 +40！
+        <!-- 卡牌 2：上野鰻魚名店 (技能/美食) -->
+        <div onclick="playCardToTimeline(1)" class="spire-card card-border-skill" style="transform: rotate(-5deg) translateY(2px);">
+          <div class="energy-orb">2</div>
+          <div class="card-art-box" style="background-image: url('https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=400&q=80');">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+            <span class="absolute bottom-1 left-2 text-[10px] font-black text-sky-300">[上野] 美食</span>
+          </div>
+          <div class="px-2.5 py-1 text-center">
+            <h4 class="font-black text-xs text-white">🍱 上野百年鰻魚飯</h4>
+            <div class="h-0.5 bg-sky-500/40 my-1"></div>
+            <p class="text-[10px] text-sky-100 leading-tight">
+              造成 <strong class="text-emerald-400 font-bold">+30 滿足度</strong>。<br>
+              若接在淺草後，觸發<strong class="text-amber-300 font-bold">順路連鎖 +15</strong>！
             </p>
           </div>
-          <div class="text-[9px] text-amber-400 text-center font-mono border-t border-slate-800 pt-0.5">LUXURY VAN</div>
+          <div class="absolute bottom-1.5 inset-x-0 text-center text-[9px] text-sky-400/80 font-mono">SKILL / 美食</div>
         </div>
 
-        <!-- 卡牌 3：替換景點【押上高空下午茶】 -->
-        <div onclick="playPixelCard('afternoon_tea')" class="pixel-card bg-slate-900 hover:border-purple-400 flex flex-col justify-between p-2">
-          <div>
-            <div class="flex justify-between items-center text-[10px] border-b-2 border-black pb-1 mb-1 font-mono">
-              <span class="bg-amber-400 text-black px-1 font-black">1 費</span>
-              <span class="text-purple-300 font-bold">[替換槽位]</span>
-            </div>
-            <div class="h-20 bg-slate-800 border-2 border-black mb-1 flex items-center justify-center text-3xl">
-              ☕🍰
-            </div>
-            <h5 class="text-xs font-black text-white pixel-text leading-tight">押上高空下午茶</h5>
-            <p class="text-[10px] text-slate-300 pixel-text mt-1 leading-snug">
-              替換掉爭議的澀谷槽位！<br>
-              <strong class="text-purple-300 font-bold">修復槽位：</strong>坐著看風景，無縫銜接燒肉。
+        <!-- 卡牌 3：私房走讀話術 (反駁質問王牌) -->
+        <div onclick="playCardToTimeline(2)" class="spire-card card-border-power" style="transform: rotate(0deg) translateY(0px);">
+          <div class="energy-orb">1</div>
+          <div class="card-art-box" style="background-image: url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=400&q=80');">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+            <span class="absolute bottom-1 left-2 text-[10px] font-black text-purple-300">話術反駁</span>
+          </div>
+          <div class="px-2.5 py-1 text-center">
+            <h4 class="font-black text-xs text-white">🗣️ 「這叫深度走讀」</h4>
+            <div class="h-0.5 bg-purple-500/40 my-1"></div>
+            <p class="text-[10px] text-purple-100 leading-tight">
+              <strong class="text-yellow-300 font-bold">精準反駁質問：</strong><br>
+              化解痛風抗議！理智 +15，婆婆滿意度 +25。
             </p>
           </div>
-          <div class="text-[9px] text-purple-400 text-center font-mono border-t border-slate-800 pt-0.5">CHANGE SLOT</div>
+          <div class="absolute bottom-1.5 inset-x-0 text-center text-[9px] text-purple-400/80 font-mono">POWER / 反駁</div>
         </div>
 
-        <!-- 卡牌 4：婆媳分流【讓老公帶婆婆去按摩】 -->
-        <div onclick="playPixelCard('massage')" class="pixel-card bg-emerald-950 hover:border-emerald-400 flex flex-col justify-between p-2">
-          <div>
-            <div class="flex justify-between items-center text-[10px] border-b-2 border-black pb-1 mb-1 font-mono">
-              <span class="bg-amber-400 text-black px-1 font-black">1 費</span>
-              <span class="text-emerald-300 font-bold">[奇策分流]</span>
-            </div>
-            <div class="h-20 bg-black border-2 border-black mb-1 flex items-center justify-center text-3xl">
-              💆‍♂️🍵
-            </div>
-            <h5 class="text-xs font-black text-white pixel-text leading-tight">日式頂級足部 SPA</h5>
-            <p class="text-[10px] text-slate-300 pixel-text mt-1 leading-snug">
-              讓孝順兒子帶婆婆去按摩！<br>
-              <strong class="text-emerald-400 font-bold">解除質疑：</strong>徹底拔除反對標籤。
+        <!-- 卡牌 4：押上高空下午茶 (替換槽位/休息) -->
+        <div onclick="playCardToTimeline(3)" class="spire-card card-border-gold" style="transform: rotate(5deg) translateY(2px);">
+          <div class="energy-orb">1</div>
+          <div class="card-art-box" style="background-image: url('https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=400&q=80');">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+            <span class="absolute bottom-1 left-2 text-[10px] font-black text-amber-300">[押上] 休息</span>
+          </div>
+          <div class="px-2.5 py-1 text-center">
+            <h4 class="font-black text-xs text-white">☕ 押上景觀下午茶</h4>
+            <div class="h-0.5 bg-amber-500/40 my-1"></div>
+            <p class="text-[10px] text-amber-100 leading-tight">
+              替換爭議的 SLOT 3 澀谷！<br>
+              坐著看風景，無縫銜接 18:30 燒肉。
             </p>
           </div>
-          <div class="text-[9px] text-emerald-400 text-center font-mono border-t border-slate-800 pt-0.5">SPA TACTIC</div>
+          <div class="absolute bottom-1.5 inset-x-0 text-center text-[9px] text-amber-400/80 font-mono">REST / 替換</div>
+        </div>
+
+        <!-- 卡牌 5：Alphard 尊榮包車 (豪華斬殺) -->
+        <div onclick="playCardToTimeline(4)" class="spire-card card-border-gold" style="transform: rotate(10deg) translateY(12px);">
+          <div class="energy-orb">2</div>
+          <div class="card-art-box" style="background-image: url('https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=400&q=80');">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+            <span class="absolute bottom-1 left-2 text-[10px] font-black text-amber-300">豪華尊榮</span>
+          </div>
+          <div class="px-2.5 py-1 text-center">
+            <h4 class="font-black text-xs text-white">🚐 Alphard 私人包車</h4>
+            <div class="h-0.5 bg-amber-500/40 my-1"></div>
+            <p class="text-[10px] text-amber-100 leading-tight">
+              零爬樓梯！<br>
+              婆婆尊榮感大滿足 <strong class="text-emerald-400 font-bold">+45</strong>！
+            </p>
+          </div>
+          <div class="absolute bottom-1.5 inset-x-0 text-center text-[9px] text-amber-400/80 font-mono">LUXURY / 尊榮</div>
         </div>
 
       </div>
@@ -417,224 +557,242 @@
 
   </main>
 
-  <!-- ============================================== -->
-  <!-- 戴夫風大魄力結算彈窗 (8-Bit Pixel Outcome Modal) -->
-  <!-- ============================================== -->
-  <div id="pixel-result-modal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4">
-    <div class="pixel-box bg-slate-900 max-w-lg w-full p-6 text-center border-4 border-amber-500 relative">
-      <div class="w-16 h-16 bg-amber-500 border-4 border-black mx-auto flex items-center justify-center text-3xl mb-3 pixel-idle" id="result-icon">
+  <!-- 結算彈窗 -->
+  <div id="spire-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-gradient-to-b from-stone-900 to-black border-2 border-amber-500 rounded-3xl max-w-lg w-full p-8 shadow-[0_0_80px_rgba(245,158,11,0.5)] text-center relative overflow-hidden">
+      <div class="w-20 h-20 rounded-2xl bg-amber-500/20 border-2 border-amber-400 mx-auto flex items-center justify-center text-4xl mb-4 shadow-xl" id="modal-icon">
         🏆
       </div>
-      <h3 class="text-lg font-black text-amber-300 pixel-font tracking-wider" id="result-title">CONTRACT SIGNED!!</h3>
-      <p class="text-xs text-slate-200 pixel-text mt-3 leading-relaxed" id="result-desc">
-        內容描述
-      </p>
-
-      <div class="my-4 p-3 bg-black border-2 border-slate-700 text-xs pixel-text text-amber-200 space-y-1 text-left" id="result-stats">
-        <!-- 數值細節 -->
-      </div>
-
-      <button onclick="closePixelModal()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs pixel-btn uppercase tracking-wider">
-        下一輪客戶會客室 (CONTINUE)
+      <h2 class="text-2xl font-black text-amber-200 spire-font tracking-wider" id="modal-title">VICTORY: 提案成功成交！</h2>
+      <p class="text-xs text-amber-100/80 mt-2 leading-relaxed" id="modal-desc"></p>
+      <div class="my-6 p-4 rounded-2xl bg-black/80 border border-amber-900/60 text-xs text-amber-200 space-y-2 text-left" id="modal-rewards"></div>
+      <button onclick="closeSpireModal()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 text-slate-950 font-black text-sm uppercase tracking-wider shadow-xl hover:scale-[1.02] transition">
+        踏入下一層尖塔 (CONTINUE)
       </button>
     </div>
   </div>
 
-  <!-- 簡易 8-Bit Toast 提示條 -->
-  <div id="pixel-toast" class="fixed bottom-6 right-6 bg-black border-4 border-amber-500 text-amber-200 px-4 py-2 text-xs font-black pixel-text hidden items-center gap-2 z-50">
-    <span id="toast-icon">⚡</span>
-    <span id="toast-msg">提示訊息</span>
-  </div>
-
   <script>
-    // 遊戲數值與反對對話情境狀態機
-    let daveHp = 80;
-    let satisfaction = 20; // 滿足度
-    let currentEnergy = 3;
-    let round = 1;
-    let hasObjection = true; // 當前是否存在婆婆的反對質問
+    let energy = 3;
+    let playerHp = 78;
+    let playerBlock = 12;
+    let enemySatisfaction = 35;
+    let currentRound = 1;
+    let hasObjection = true;
 
-    // 婆婆質問庫 (輪替題目)
-    const objectionQuests = [
+    let timelineSlots = [
+      { title: "🏮 淺草人力車巡禮", tag: "淺草", area: "asakusa", satisfaction: 25 },
+      { title: "🍱 上野百年鰻魚飯", tag: "上野", area: "ueno", satisfaction: 30 },
+      { title: "🛍️ 澀谷十字路口狂暴", tag: "澀谷", area: "shibuya", satisfaction: 10, isContested: true },
+      { title: "晴空塔 30F 敘敘苑燒肉", tag: "押上", satisfaction: 25, locked: true }
+    ];
+
+    const objectionScenarios = [
       {
-        speaker: "婆婆 (反對質問)",
+        speaker: "控制狂婆婆",
         text: "「你剛剛提議下午去澀谷十字路口跟逛街？！我兒子平常上班已經累得要死，你還要我們走一萬步？你到底懂不懂排行程啊？！」",
-        slotName: "⚠️ 澀谷暴走街 (痛風爭議)",
-        weakness: "talk_defense"
+        hint: "👉 婆婆對【SLOT 3 澀谷】強烈抗議！請打出【話術反駁】或【押上下午茶】替換槽位！",
+        avatar: "👵💢",
+        isAngry: true
       },
       {
-        speaker: "婆婆 (第二輪質問)",
+        speaker: "控制狂婆婆",
         text: "「還有！中午那家鰻魚飯排隊要 40 分鐘，我血糖低不能餓！你身為策劃難道要我跟我兒子在大太陽底下曬成人乾嗎？！」",
-        slotName: "⚠️ 上野鰻魚飯 (排隊爭議)",
-        weakness: "alphard"
+        hint: "👉 婆婆對排隊提出質疑！請打出【Alphard 包車】或【話術】化解！",
+        avatar: "👵🔥",
+        isAngry: true
       }
     ];
 
-    function showObjection(index) {
-      hasObjection = true;
-      const q = objectionQuests[index % objectionQuests.length];
-      document.getElementById('dialogue-speaker').innerText = q.speaker;
-      document.getElementById('dialogue-text').innerText = q.text;
-      document.getElementById('slot-name-3').innerText = q.slotName;
+    function showObjectionDialogue(idx) {
+      const q = objectionScenarios[idx % objectionScenarios.length];
+      document.getElementById('pixel-speaker-name').innerText = q.speaker;
+      document.getElementById('pixel-dialogue-text').innerText = q.text;
+      document.getElementById('pixel-dialogue-hint').innerText = q.hint;
       
-      // 婆婆立繪切換為憤怒拍桌
-      const granny = document.getElementById('granny-sprite');
-      granny.className = "w-20 h-20 bg-rose-950 border-4 border-black pixel-box flex items-center justify-center text-4xl shadow-xl relative pixel-angry";
-      granny.innerText = "👵💢";
+      const avatarBox = document.getElementById('pixel-avatar-emoji');
+      avatarBox.className = "pixel-angry";
+      avatarBox.innerText = q.avatar;
 
-      // 彈出 OBJECTION 橫幅
+      // 撞擊橫幅
       const badge = document.getElementById('objection-badge');
       badge.classList.remove('hidden');
       setTimeout(() => badge.classList.add('hidden'), 1800);
-
-      document.getElementById('dialogue-hint').innerText = "👉 婆婆提出強烈質疑！請打出對應卡牌反駁或修復時段槽位！";
     }
 
-    // 打出像素卡牌
-    function playPixelCard(cardType) {
-      if (currentEnergy <= 0) {
-        showPixelToast("🪙 能量不足！請等待下一回合！", "⚠️");
+    function playCardToTimeline(cardIdx) {
+      if (energy <= 0) {
+        showFloatDamage("⚡ 能量不足！", "#f87171");
         return;
       }
 
-      const granny = document.getElementById('granny-sprite');
+      const avatarBox = document.getElementById('pixel-avatar-emoji');
 
-      if (cardType === 'talk_defense') {
-        currentEnergy -= 1;
-        satisfaction += 25;
-        daveHp = Math.min(100, daveHp + 10);
+      // 卡牌 2: 話術反駁
+      if (cardIdx === 2) {
+        energy -= 1;
+        enemySatisfaction += 25;
+        playerHp = Math.min(100, playerHp + 10);
+        hasObjection = false;
         
-        // 化解質問
-        hasObjection = false;
-        granny.className = "w-20 h-20 bg-slate-800 border-4 border-black pixel-box flex items-center justify-center text-4xl pixel-idle shadow-xl relative";
-        granny.innerText = "👵💬";
-        document.getElementById('dialogue-speaker').innerText = "婆婆 (被說服了)";
-        document.getElementById('dialogue-text').innerText = "「……哼，私房深度走讀？聽起來是有點品味啦……既然有預約專屬休息長椅，那我就勉強接受！」";
-        document.getElementById('slot-name-3').innerText = "🏛️ 深度走讀 (化解)";
-        document.getElementById('slot-box-3').className = "bg-black/70 border-2 border-emerald-500 p-2 text-center";
-        showPixelToast("打出【私房話術】！成功化解痛風抗議，滿足度 +25！", "🗣️");
-      } 
-      else if (cardType === 'alphard') {
-        currentEnergy -= 2;
-        satisfaction += 45;
-        hasObjection = false;
-        granny.className = "w-20 h-20 bg-amber-900 border-4 border-black pixel-box flex items-center justify-center text-4xl pixel-idle shadow-xl relative";
-        granny.innerText = "👵✨";
-        document.getElementById('dialogue-speaker').innerText = "婆婆 (尊榮狂喜)";
-        document.getElementById('dialogue-text').innerText = "「哎呀！你早說全程是豪華 Alphard 保母車直達嘛！我這老骨頭最喜歡吹冷氣看風景了，策劃你真懂事！」";
-        document.getElementById('slot-name-3').innerText = "🚐 Alphard 包車直達";
-        document.getElementById('slot-box-3').className = "bg-amber-950/70 border-2 border-amber-400 p-2 text-center";
-        showPixelToast("打出【Alphard 包車】！婆婆虛榮心爆表，滿足度狂飆 +45！", "🚐");
+        avatarBox.className = "pixel-idle";
+        avatarBox.innerText = "👵💬";
+        document.getElementById('pixel-speaker-name').innerText = "婆婆 (被說服了)";
+        document.getElementById('pixel-dialogue-text').innerText = "「……哼，私房深度走讀？聽起來是有點品味啦……既然有安排專屬休息長椅，那我就勉強接受！」";
+        document.getElementById('pixel-dialogue-hint').innerText = "✨ 質問已成功化解！滿意度 +25！";
+
+        timelineSlots[2] = { title: "🏛️ 深度私房走讀 (化解)", tag: "淺草", area: "asakusa", satisfaction: 25 };
+        showFloatDamage("🗣️ 話術反駁成功 +25!", "#38bdf8");
       }
-      else if (cardType === 'afternoon_tea') {
-        currentEnergy -= 1;
-        satisfaction += 20;
-        document.getElementById('slot-name-3').innerText = "☕ 押上高空下午茶";
-        document.getElementById('slot-box-3').className = "bg-black/70 border-2 border-purple-500 p-2 text-center";
-        document.getElementById('dialogue-text').innerText = "「下午茶坐在高空沙發看晴空塔？這還可以，至少不用走路，又能先等 18:30 燒肉。」";
-        showPixelToast("替換 SLOT 3 為高空下午茶！順暢銜接燒肉！", "☕");
+      // 卡牌 3: 押上下午茶 (替換爭議槽位)
+      else if (cardIdx === 3) {
+        energy -= 1;
+        enemySatisfaction += 20;
+        timelineSlots[2] = { title: "☕ 押上高空下午茶", tag: "押上", area: "oshiage", satisfaction: 20 };
+        avatarBox.className = "pixel-idle";
+        avatarBox.innerText = "👵🍵";
+        document.getElementById('pixel-speaker-name').innerText = "婆婆 (滿意鬆口)";
+        document.getElementById('pixel-dialogue-text').innerText = "「把澀谷換成高空景觀下午茶？這還可以！坐著吹冷氣看晴空塔，剛好銜接 18:30 燒肉，算你機靈！」";
+        document.getElementById('pixel-dialogue-hint').innerText = "✨ 爭端槽位已替換為舒適下午茶！";
+        showFloatDamage("☕ 槽位替換成功 +20!", "#fbbf24");
       }
-      else if (cardType === 'massage') {
-        currentEnergy -= 1;
-        satisfaction += 20;
-        document.getElementById('dialogue-text').innerText = "「讓我兒子陪我去泡腳按摩？我兒子真孝順！策劃你這招安排得不錯！」";
-        showPixelToast("打出【頂級足部 SPA】！婆媳分流成功！", "💆‍♂️");
+      // 卡牌 4: Alphard 尊榮包車
+      else if (cardIdx === 4) {
+        energy -= 2;
+        enemySatisfaction += 45;
+        avatarBox.className = "pixel-idle";
+        avatarBox.innerText = "👵✨";
+        document.getElementById('pixel-speaker-name').innerText = "婆婆 (尊榮狂喜)";
+        document.getElementById('pixel-dialogue-text').innerText = "「哎呀！你早說全程是豪華 Alphard 保母車直達嘛！我這老骨頭最喜歡吹冷氣看風景了，策劃你真懂事！」";
+        document.getElementById('pixel-dialogue-hint').innerText = "👑 尊榮感爆棚！滿意度暴增 +45！";
+        showFloatDamage("🚐 尊榮斬殺 +45!", "#34d399");
+      }
+      else {
+        energy -= 1;
+        enemySatisfaction += 20;
+        showFloatDamage("⚔️ 提案推進 +20!", "#34d399");
       }
 
-      updateHUD();
-      checkRoundOutcome();
+      updateBattleUI();
     }
 
-    // Git Rebase 拯救重排
-    function playPixelRebase() {
-      satisfaction = 85;
-      hasObjection = false;
-      document.getElementById('slot-name-1').innerText = "🏮 淺草雷門人力車";
-      document.getElementById('slot-name-2').innerText = "🍱 上野老店免排隊包廂";
-      document.getElementById('slot-name-3').innerText = "☕ 押上高空景觀下午茶";
-      document.getElementById('slot-box-3').className = "bg-black/70 border-2 border-emerald-500 p-2 text-center";
-      
-      const granny = document.getElementById('granny-sprite');
-      granny.className = "w-20 h-20 bg-amber-900 border-4 border-black pixel-box flex items-center justify-center text-4xl pixel-idle shadow-xl relative";
-      granny.innerText = "👵🎉";
+    function instantRebase() {
+      energy = 0;
+      enemySatisfaction = 88;
+      timelineSlots[0] = { title: "🏮 淺草人力車巡禮", tag: "淺草", area: "asakusa" };
+      timelineSlots[1] = { title: "🍱 上野老店免排隊包廂", tag: "上野", area: "ueno" };
+      timelineSlots[2] = { title: "☕ 押上高空下午茶", tag: "押上", area: "oshiage" };
 
-      document.getElementById('dialogue-speaker').innerText = "婆婆 (完美折服)";
-      document.getElementById('dialogue-text').innerText = "「天啊！淺草人力車 ➔ 專屬包廂鰻魚 ➔ 高空下午茶 ➔ 晴空塔頂級燒肉！這整趟完全不用走路還那麼氣派，我直接簽約了！」";
-      
-      updateHUD();
-      showPixelToast("發動 GIT REBASE！時序全面重構為神級無障礙動線！", "🔀");
-      checkRoundOutcome();
+      const avatarBox = document.getElementById('pixel-avatar-emoji');
+      avatarBox.className = "pixel-idle";
+      avatarBox.innerText = "👵🎉";
+      document.getElementById('pixel-speaker-name').innerText = "婆婆 (完全折服)";
+      document.getElementById('pixel-dialogue-text').innerText = "「天啊！人力車 ➔ 專屬包廂鰻魚 ➔ 高空下午茶 ➔ 晴空塔頂級燒肉！這整趟完全不用走路還那麼氣派，我直接簽約了！」";
+      document.getElementById('pixel-dialogue-hint').innerText = "⚡ GIT REBASE 達成神級無障礙動線！";
+
+      showFloatDamage("✨ GIT REBASE 神級動線達成！", "#38bdf8");
+      updateBattleUI();
     }
 
-    function updateHUD() {
-      // 能量幣
-      const energyBox = document.getElementById('energy-coins-box');
-      energyBox.innerHTML = '';
-      for (let i = 0; i < currentEnergy; i++) {
-        energyBox.innerHTML += `<span class="text-amber-400 text-sm">🪙</span>`;
-      }
-
-      // HP 條
-      document.getElementById('dave-hp-text').innerText = `${daveHp}/100`;
-      document.getElementById('dave-hp-fill').style.width = `${daveHp}%`;
-
-      // 滿足度
-      satisfaction = Math.min(100, satisfaction);
-      document.getElementById('satisfaction-text').innerText = `${satisfaction} / 100`;
-      document.getElementById('satisfaction-fill').style.width = `${satisfaction}%`;
+    function clearSpecificSlot(num) {
+      timelineSlots[num - 1] = null;
+      updateBattleUI();
     }
 
-    function checkRoundOutcome() {
-      if (satisfaction >= 80) {
-        setTimeout(() => {
-          openPixelModal(
-            "🏆 提案大獲全勝！簽署合約 (PR MERGED)！",
-            "戴夫你太強了！面對控制狂婆婆的連環刁難與痛風質問，你沉著應對，利用精準的話術、尊榮包車與 Git Rebase 完美化解！客戶直接掏出黑卡全額付款！",
-            `<div>💰 獲得提成佣金: <strong class="text-emerald-400 font-bold">+¥32,000</strong></div>
-             <div>👔 老闆滿意度: <strong class="text-amber-400 font-bold">+50% (本月最佳社畜)</strong></div>
-             <div>🍣 壽司店獎勵: <strong class="text-purple-300 font-bold">解鎖【頂級黑鮪魚大腹握壽司卡】</strong></div>`
-          );
-        }, 600);
+    function executeEndTurn() {
+      if (enemySatisfaction >= 80) {
+        openSpireModal(
+          "🏆 VICTORY: 提案審核通過！(PR MERGED)",
+          "太強了！面对控制狂婆婆的連環刁難與痛風質問，你沉著應對，利用精準的話術、尊榮包車與 Git Rebase 完美化解！客戶直接掏出黑卡全額付款！",
+          `<div>💰 獲得業績提成: <strong class="text-emerald-400 font-bold">+¥32,000</strong></div>
+           <div>🌟 老闆滿意度: <strong class="text-amber-400 font-bold">+50% (本月最佳社畜)</strong></div>
+           <div>🎴 解鎖新卡牌: <strong class="text-purple-300 font-bold">[私人包直升機預約券]</strong></div>`
+        );
+      } else {
+        // 進入第二輪反對質問
+        currentRound++;
+        document.getElementById('round-num').innerText = currentRound;
+        energy = 3;
+        playerHp = Math.max(10, playerHp - 15);
+        showObjectionDialogue(1);
+        showFloatDamage("💢 婆婆發動第二輪質問 -15 HP！", "#ef4444");
+        updateBattleUI();
       }
     }
 
-    function openPixelModal(title, desc, statsHtml) {
-      document.getElementById('result-title').innerText = title;
-      document.getElementById('result-desc').innerText = desc;
-      document.getElementById('result-stats').innerHTML = statsHtml;
-      document.getElementById('pixel-result-modal').classList.remove('hidden');
+    function updateBattleUI() {
+      document.getElementById('current-energy').innerText = energy;
+      document.getElementById('player-hp-text').innerText = `${playerHp} / 100`;
+      document.getElementById('player-hp-bar').style.width = `${playerHp}%`;
+      document.getElementById('enemy-hp-text').innerText = `${Math.min(100, enemySatisfaction)} / 100`;
+
+      // 更新槽位 UI
+      for (let i = 0; i < 3; i++) {
+        const slotEl = document.getElementById(`slot-${i+1}`);
+        const contentEl = document.getElementById(`slot-${i+1}-content`);
+        const item = timelineSlots[i];
+
+        if (item) {
+          if (item.isContested) {
+            slotEl.className = "slot-target rounded-xl p-2.5 min-h-[88px] flex flex-col justify-between cursor-pointer border-rose-500/80 bg-rose-950/20";
+            contentEl.innerHTML = `<span class="text-rose-300 font-bold">${item.title}</span>`;
+          } else {
+            slotEl.className = "slot-target rounded-xl p-2.5 min-h-[88px] flex flex-col justify-between cursor-pointer border-cyan-400/80 bg-cyan-950/30";
+            contentEl.innerHTML = `
+              <div class="text-left">
+                <span class="text-[9px] font-bold px-1 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono">[${item.tag}]</span>
+                <div class="font-bold text-xs text-white mt-0.5">${item.title}</div>
+              </div>
+            `;
+          }
+        } else {
+          slotEl.className = "slot-target rounded-xl p-2.5 min-h-[88px] flex flex-col justify-between cursor-pointer";
+          contentEl.innerHTML = `<span class="text-slate-500 text-xs">點擊下方卡牌裝備</span>`;
+        }
+      }
     }
 
-    function closePixelModal() {
-      document.getElementById('pixel-result-modal').classList.add('hidden');
-      restartDaveBattle();
+    function showFloatDamage(text, color = '#f87171') {
+      const container = document.querySelector('.battle-board');
+      const floatEl = document.createElement('div');
+      floatEl.className = 'damage-popup text-lg';
+      floatEl.style.color = color;
+      floatEl.innerText = text;
+      floatEl.style.top = '30%';
+      floatEl.style.left = `${45 + (Math.random() * 10 - 5)}%`;
+      container.appendChild(floatEl);
+      setTimeout(() => floatEl.remove(), 1200);
     }
 
-    function restartDaveBattle() {
-      daveHp = 80;
-      satisfaction = 20;
-      currentEnergy = 3;
-      round = 1;
-      updateHUD();
-      showObjection(0);
-      showPixelToast("重新開始客戶會客室對談！", "🔄");
+    function openSpireModal(title, desc, rewardsHtml) {
+      document.getElementById('modal-title').innerText = title;
+      document.getElementById('modal-desc').innerText = desc;
+      document.getElementById('modal-rewards').innerHTML = rewardsHtml;
+      document.getElementById('spire-modal').classList.remove('hidden');
+    }
+    function closeSpireModal() {
+      document.getElementById('spire-modal').classList.add('hidden');
+      restartBattle();
     }
 
-    function showPixelToast(msg, icon = "⚡") {
-      const toast = document.getElementById('pixel-toast');
-      document.getElementById('toast-msg').innerText = msg;
-      document.getElementById('toast-icon').innerText = icon;
-      toast.classList.remove('hidden');
-      toast.classList.add('flex');
-      setTimeout(() => {
-        toast.classList.add('hidden');
-        toast.classList.remove('flex');
-      }, 2500);
+    function restartBattle() {
+      energy = 3;
+      playerHp = 78;
+      enemySatisfaction = 35;
+      currentRound = 1;
+      document.getElementById('round-num').innerText = 1;
+      timelineSlots = [
+        { title: "🏮 淺草人力車巡禮", tag: "淺草", area: "asakusa", satisfaction: 25 },
+        { title: "🍱 上野百年鰻魚飯", tag: "上野", area: "ueno", satisfaction: 30 },
+        { title: "🛍️ 澀谷十字路口狂暴", tag: "澀谷", area: "shibuya", satisfaction: 10, isContested: true },
+        { title: "晴空塔 30F 敘敘苑燒肉", tag: "押上", satisfaction: 25, locked: true }
+      ];
+      showObjectionDialogue(0);
+      updateBattleUI();
     }
 
-    // 初始化戴夫戰鬥場景
-    updateHUD();
-    showObjection(0);
+    // 初始化
+    restartBattle();
   </script>
 </body>
 </html>
