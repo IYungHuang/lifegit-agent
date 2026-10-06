@@ -8,7 +8,7 @@
 
 **Tech Stack:** HTML、CSS、原生 JavaScript ES modules、Node.js 22 內建 `node:test` 與 `assert/strict`、本機圖片與 Web Audio 短音效。執行環境已找到 Node 22.23.1；無產品套件依賴。
 
-**Spec:** [已核准設計稿](../specs/2026-10-06-steam-first-encounter-design.md)。2026-10-06 使用者已核准完整規格，本計畫待審閱。
+**Spec:** [已核准設計稿](../specs/2026-10-06-steam-first-encounter-design.md)。2026-10-06 使用者已核准完整規格，本計畫已核准並選擇直接施工。
 
 ## Global Constraints
 
@@ -84,7 +84,7 @@
 | temple | sight | asakusa | 90 | 0 | 2 | photo |
 | park | sight | ueno | 100 | 600 | 3 | photo |
 | tower | sight | oshiage | 100 | 3000 | 1 | photo |
-| shopping | sight | ueno | 180 | 6500 | 5 | shopping |
+| shopping | sight | ueno | 240 | 6500 | 5 | shopping |
 | bento | meal | asakusa | 45 | 1200 | 0 | meal |
 | eel | meal | ueno | 100 | 4000 | 1 | meal |
 | lunch | meal | oshiage | 60 | 1800 | 0 | meal |
@@ -320,3 +320,7 @@ button:focus-visible { outline: 3px solid #183848; outline-offset: 3px; }
 六項任務完成並通過規格八項驗收才可稱首場完成。素材缺失、未實機檢查或尚有不可解手牌時皆須明列未完成。依選定執行方法進行最終審查，修正具體問題後重跑受影響檢查。
 
 建議採本對話直接施工：規則、狀態、演出與畫面共享緊密介面，先保持單一實作者連續理解，再做整體審查。另一選項是逐任務子代理實作與審查；由使用者選擇後啟動。
+
+## Execution Record
+
+2026-10-06：六項任務的程式與素材已實作。30 項測試通過，獨立審查三項 P2 已修正。實際瀏覽器、兩種桌機解析度與音效驗收尚未完成；詳見 `docs/steam-playtest.md`。購物卡耗時已依實測由 180 調整為 240 分鐘。

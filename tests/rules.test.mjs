@@ -25,3 +25,7 @@ test('issues retain priority and solutions contain only valid arrangements',()=>
  const solved=solutions(['temple','bento','cafe','taxi']);assert.ok(solved.length);
  for(const p of solved)assert.equal(evaluate(p).success,true);
 });
+test('the real card pool can produce a late itinerary',()=>{
+ const e=evaluate({slots:['tower','eel','shopping'],links:[null,null,null]});
+ assert.ok(e.issues.some(i=>i.code==='late'));
+});
