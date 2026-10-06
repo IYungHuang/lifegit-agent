@@ -3,74 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LifeSpire | 親子旅遊 Roguelike 決策尖塔 & LifeGit</title>
+  <title>LifeSpire: Git-Roguelike 旅程尖塔決策引擎</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
     body {
       font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif;
     }
     .spire-font {
       font-family: 'Cinzel', 'Noto Sans TC', serif;
     }
-    .map-node {
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .map-node:hover {
-      transform: scale(1.15) translateY(-3px);
-    }
-    .node-active {
-      box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
-      animation: pulse-gold 1.8s infinite cubic-bezier(0.66, 0, 0, 1);
-    }
-    @keyframes pulse-gold {
-      to {
-        box-shadow: 0 0 0 14px rgba(245, 158, 11, 0);
-      }
-    }
     .card-hover {
-      transition: all 0.2s ease;
+      transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .card-hover:hover {
       transform: translateY(-8px) scale(1.02);
-      box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px 2px rgba(245, 158, 11, 0.3);
+      box-shadow: 0 16px 28px -6px rgba(0,0,0,0.6), 0 0 16px 2px rgba(245, 158, 11, 0.35);
     }
-    /* 卡牌金光流光效果 */
-    .card-glow-gold {
-      background: linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(15,23,42,0.9) 100%);
-      border: 1.5px solid rgba(245, 158, 11, 0.5);
+    .node-pulse {
+      animation: pulse-gold 1.8s infinite cubic-bezier(0.66, 0, 0, 1);
     }
-    .card-glow-blue {
-      background: linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(15,23,42,0.9) 100%);
-      border: 1.5px solid rgba(59, 130, 246, 0.4);
+    @keyframes pulse-gold {
+      0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+      70% { box-shadow: 0 0 0 12px rgba(245, 158, 11, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
     }
-    .card-glow-purple {
-      background: linear-gradient(135deg, rgba(168,85,247,0.15) 0%, rgba(15,23,42,0.9) 100%);
-      border: 1.5px solid rgba(168, 85, 247, 0.4);
+    .slot-empty {
+      border: 2px dashed rgba(148, 163, 184, 0.25);
     }
-    .card-glow-red {
-      background: linear-gradient(135deg, rgba(239,68,68,0.2) 0%, rgba(15,23,42,0.9) 100%);
-      border: 1.5px solid rgba(239, 68, 68, 0.5);
-    }
-    /* 尖塔地圖連線樣式 */
-    .map-path-line {
-      stroke-dasharray: 6;
-      animation: dash 25s linear infinite;
-    }
-    @keyframes dash {
-      to {
-        stroke-dashoffset: -1000;
-      }
+    .slot-filled {
+      border: 2px solid rgba(56, 189, 248, 0.6);
+      background: rgba(15, 23, 42, 0.85);
     }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-amber-500 selection:text-black">
 
-  <!-- 頂部：Roguelike 遊戲狀態列 (HP / 理智線 / 金幣 / 能量) -->
+  <!-- 頂部頂級導覽列：模式切換核心 -->
   <header class="border-b border-amber-950/60 bg-slate-950/95 sticky top-0 z-50 px-5 py-3 flex flex-wrap items-center justify-between shadow-2xl backdrop-blur">
     
-    <!-- 左側：標題與關卡資訊 -->
+    <!-- 標題 Logo -->
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 via-orange-500 to-amber-300 flex items-center justify-center shadow-lg shadow-amber-500/20 border border-amber-300/40">
         <i class="fa-solid fa-tower-observation text-slate-950 text-xl font-black"></i>
@@ -78,772 +51,864 @@
       <div>
         <div class="flex items-center gap-2">
           <h1 class="font-black text-base tracking-wider text-amber-200 spire-font">LifeSpire</h1>
-          <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">ACT 3: 東京灣篇</span>
-          <span class="text-xs text-slate-400 font-mono hidden sm:inline">Git-Roguelike Engine</span>
+          <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Git-Roguelike Engine</span>
         </div>
-        <p class="text-[11px] text-slate-400">家庭旅遊尖塔決策樹：將排行程化為歡樂的 Roguelike 爬塔探險</p>
+        <p class="text-[11px] text-slate-400">專為一般人與企劃設計的 Git 狀態機旅程決策控制台</p>
       </div>
     </div>
 
-    <!-- 中間：全隊隊伍狀態儀表板 (Stats Bar) -->
-    <div class="flex items-center gap-3 md:gap-5 my-2 sm:my-0 bg-slate-900/90 border border-amber-900/50 px-4 py-2 rounded-2xl shadow-inner">
-      <!-- 隊伍體力值 (Party HP) -->
-      <div class="flex items-center gap-2.5">
-        <div class="w-7 h-7 rounded-lg bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 text-xs">
-          <i class="fa-solid fa-heart-pulse"></i>
-        </div>
-        <div>
-          <div class="flex justify-between items-center text-[10px] text-slate-400">
-            <span>隊伍體力 (HP)</span>
-            <span id="stat-hp-text" class="font-mono font-bold text-rose-400">76 / 100</span>
-          </div>
-          <div class="w-24 bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700 mt-0.5">
-            <div id="stat-hp-bar" class="bg-gradient-to-r from-rose-500 to-amber-500 h-2 rounded-full transition-all duration-500" style="width: 76%"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="h-6 w-px bg-slate-800"></div>
-
-      <!-- 小孩情緒 / 理智線 (Sanity) -->
-      <div class="flex items-center gap-2.5">
-        <div class="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 text-xs">
-          <i class="fa-solid fa-face-smile"></i>
-        </div>
-        <div>
-          <div class="flex justify-between items-center text-[10px] text-slate-400">
-            <span>二寶理智線</span>
-            <span id="stat-sanity-text" class="font-mono font-bold text-indigo-300">85% (開心)</span>
-          </div>
-          <div class="w-24 bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700 mt-0.5">
-            <div id="stat-sanity-bar" class="bg-gradient-to-r from-indigo-500 to-cyan-400 h-2 rounded-full transition-all duration-500" style="width: 85%"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="h-6 w-px bg-slate-800"></div>
-
-      <!-- 預算金幣 (Gold) -->
-      <div class="flex items-center gap-2">
-        <i class="fa-solid fa-coins text-amber-400 text-sm"></i>
-        <span class="font-mono font-bold text-amber-300 text-sm" id="stat-gold">¥18,500</span>
-      </div>
-
-      <div class="h-6 w-px bg-slate-800"></div>
-
-      <!-- 行動能量 (Energy / Mana) -->
-      <div class="flex items-center gap-1.5" title="每時段可用應變行動力">
-        <div class="w-5 h-5 rounded-full bg-amber-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-md shadow-amber-500/40">
-          3
-        </div>
-        <span class="text-[11px] text-amber-200/80 font-bold">費</span>
-      </div>
-    </div>
-
-    <!-- 右側：功能按鈕 -->
-    <div class="flex items-center gap-2">
-      <button onclick="triggerCurseEmergency()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-950/80 border border-rose-600/50 text-rose-300 hover:bg-rose-900 transition text-xs font-bold shadow-lg shadow-rose-950/50">
-        <i class="fa-solid fa-skull-crossbones text-rose-400"></i>
-        <span>🚨 突發詛咒 (Hotfix)</span>
+    <!-- 模式切換 Toggle (核心亮點) -->
+    <div class="flex items-center bg-slate-900 border border-amber-900/60 p-1 rounded-2xl shadow-inner my-2 sm:my-0">
+      <button id="tab-solo-btn" onclick="switchGameMode('solo')" class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md">
+        <i class="fa-solid fa-briefcase"></i>
+        <span>🏢 單人：社畜旅行社業績尖塔</span>
       </button>
-      <button onclick="resetSpire()" class="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition text-xs" title="重啟尖塔">
+      <button id="tab-multi-btn" onclick="switchGameMode('multi')" class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-white">
+        <i class="fa-solid fa-users-viewfinder"></i>
+        <span>😈 多人：主策劃 vs 搞事天團 (半合作)</span>
+      </button>
+    </div>
+
+    <!-- 狀態重置與 GitHub 資訊 -->
+    <div class="flex items-center gap-2">
+      <a href="https://github.com/IYungHuang/lifegit-agent" target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs font-semibold flex items-center gap-1.5 transition">
+        <i class="fa-brands fa-github"></i>
+        <span class="hidden md:inline">GitHub Repo</span>
+      </a>
+      <button onclick="resetCurrentMode()" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-xs transition" title="重設狀態">
         <i class="fa-solid fa-rotate-right"></i>
       </button>
     </div>
   </header>
 
-  <!-- 主遊戲工作區 -->
-  <main class="flex-1 flex flex-col xl:flex-row overflow-hidden">
+  <!-- ========================================== -->
+  <!-- 模式一：🏢【單人模式：社畜旅行社的業績尖塔】 -->
+  <!-- ========================================== -->
+  <main id="solo-mode-view" class="flex-1 flex flex-col xl:flex-row overflow-hidden">
 
-    <!-- 左半邊：Slay the Spire 爬塔地圖 (Roguelike Map & Branch Decision) -->
-    <section class="xl:w-7/12 border-r border-amber-950/40 p-5 flex flex-col overflow-y-auto bg-gradient-to-b from-slate-950 via-slate-900/60 to-slate-950">
+    <!-- 左側：老闆的業績 KPI 爬塔地圖 + 客戶遭遇資訊 -->
+    <section class="xl:w-5/12 border-r border-slate-800/80 p-5 flex flex-col overflow-y-auto bg-slate-950/80">
       
-      <!-- 地圖標頭與圖例說明 -->
-      <div class="flex flex-wrap items-center justify-between mb-4 pb-3 border-b border-slate-800 gap-2">
+      <!-- 頂部：社畜精神數值條 -->
+      <div class="bg-slate-900 border border-amber-950/50 rounded-2xl p-4 mb-4 shadow-lg">
+        <div class="flex justify-between items-center mb-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-amber-200 spire-font">社畜理智線 (Mental HP)</span>
+            <span class="text-[10px] bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded border border-rose-500/30">老闆高壓中</span>
+          </div>
+          <span id="solo-hp-text" class="text-xs font-mono font-bold text-rose-400">75 / 100</span>
+        </div>
+        <div class="w-full bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800">
+          <div id="solo-hp-bar" class="bg-gradient-to-r from-rose-500 to-amber-500 h-2.5 rounded-full transition-all duration-300" style="width: 75%"></div>
+        </div>
+        <div class="flex justify-between items-center mt-3 text-[11px] text-slate-400 pt-2 border-t border-slate-800">
+          <span>本季業績達成率 (KPI): <strong class="text-amber-300 font-mono" id="solo-kpi-text">¥420,000 / ¥1,000,000</strong></span>
+          <span>手牌行動費: <strong class="text-amber-400 font-mono">3 / 3 費</strong></span>
+        </div>
+      </div>
+
+      <!-- 業績尖塔階梯路網 (Tower Floor Progress) -->
+      <div class="mb-4">
+        <div class="flex items-center justify-between text-xs font-bold text-slate-300 mb-2">
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-stairs text-amber-400"></i> 老闆的業績尖塔 (Floor Ladder)</span>
+          <span class="text-amber-400 font-mono text-[11px]">當前：第 2 層</span>
+        </div>
+        <div class="grid grid-cols-4 gap-2 text-center text-[10px]">
+          <div class="p-2 rounded-xl bg-slate-900 border border-emerald-500/30 text-emerald-300">
+            <div class="font-bold">Floor 1 ✓</div>
+            <div class="text-[9px] text-slate-400">小資背包客</div>
+          </div>
+          <div class="p-2 rounded-xl bg-amber-500/20 border-2 border-amber-400 text-amber-200 font-bold shadow-lg node-pulse">
+            <div>Floor 2 ▶</div>
+            <div class="text-[9px] text-amber-300">刁難婆媳團</div>
+          </div>
+          <div class="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-500">
+            <div>Floor 3</div>
+            <div class="text-[9px]">暴發戶貴婦</div>
+          </div>
+          <div class="p-2 rounded-xl bg-slate-900 border border-rose-900/30 text-rose-400">
+            <div>BOSS 👑</div>
+            <div class="text-[9px]">季末大考核</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 當前遭遇戰：甲方敵人資訊卡片 (Current Client Foe) -->
+      <div class="bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-amber-500/40 rounded-2xl p-4 shadow-xl flex-1 flex flex-col justify-between">
         <div>
-          <h2 class="text-base font-bold text-amber-200 flex items-center gap-2 spire-font">
-            <i class="fa-solid fa-dungeon text-amber-400"></i>
-            尖塔爬塔地圖 (Timeline Slay Map)
-          </h2>
-          <p class="text-xs text-slate-400 mt-0.5">點擊路線節點進行決策選擇。每個選擇皆即時連動隊伍血量與 Git 狀態機。</p>
-        </div>
-
-        <!-- 節點圖例 -->
-        <div class="flex items-center gap-3 text-[11px] text-slate-400 bg-slate-950/80 border border-slate-800 px-3 py-1.5 rounded-xl">
-          <span class="flex items-center gap-1"><span class="text-amber-400">⚔️</span> 景點打卡</span>
-          <span class="flex items-center gap-1"><span class="text-emerald-400">⛺</span> 營火午睡</span>
-          <span class="flex items-center gap-1"><span class="text-cyan-400">❓</span> 奇遇小巷</span>
-          <span class="flex items-center gap-1"><span class="text-rose-400">👑</span> 鎖定 Boss</span>
-        </div>
-      </div>
-
-      <!-- 爬塔地圖本體畫布 (垂直攀登視圖，由下往上推展至 Boss) -->
-      <div class="relative bg-slate-950/90 border border-amber-900/30 rounded-2xl p-6 shadow-2xl flex-1 min-h-[580px] flex flex-col justify-between overflow-hidden">
-        
-        <!-- 背景裝飾網格與羊皮紙微光 -->
-        <div class="absolute inset-0 bg-[radial-gradient(#f59e0b10_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none opacity-40"></div>
-
-        <!-- SVG 動態連線背景 -->
-        <svg class="absolute inset-0 w-full h-full pointer-events-none z-0" xmlns="http://www.w3.org/2000/svg">
-          <!-- 初始點至分叉點 -->
-          <line x1="50%" y1="90%" x2="50%" y2="72%" stroke="#475569" stroke-width="2" class="map-path-line" />
-          <!-- 分叉點至分支 A (台場) -->
-          <line x1="50%" y1="72%" x2="28%" y2="48%" stroke="#38bdf8" stroke-width="2.5" class="map-path-line" id="svg-line-a" />
-          <!-- 分叉點至分支 B (橫濱) -->
-          <line x1="50%" y1="72%" x2="72%" y2="48%" stroke="#c084fc" stroke-width="2" class="map-path-line" id="svg-line-b" stroke-opacity="0.4" />
-          <!-- 分支 A 至 Boss -->
-          <line x1="28%" y1="48%" x2="50%" y2="15%" stroke="#38bdf8" stroke-width="2.5" class="map-path-line" id="svg-line-a-boss" />
-          <!-- 分支 B 至 Boss -->
-          <line x1="72%" y1="48%" x2="50%" y2="15%" stroke="#c084fc" stroke-width="2" class="map-path-line" id="svg-line-b-boss" stroke-opacity="0.4" />
-        </svg>
-
-        <!-- 第 4 層：終極核心 Boss 節點 (不可取消的 Hard Lock) -->
-        <div class="relative z-10 flex flex-col items-center">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40">
-              <i class="fa-solid fa-lock mr-1"></i> HARD LOCK BOSS
-            </span>
-            <span class="text-xs font-mono text-slate-400">18:30 押上晴空塔</span>
-          </div>
-          
-          <div class="map-node cursor-pointer bg-gradient-to-b from-rose-950 to-slate-900 border-2 border-rose-500 rounded-2xl px-6 py-3.5 shadow-xl shadow-rose-950/60 flex items-center gap-4 hover:border-rose-400 transition" onclick="inspectNode('boss')">
-            <div class="w-12 h-12 rounded-xl bg-rose-600/30 border border-rose-400 flex items-center justify-center text-rose-300 text-2xl shadow-inner">
-              👑
+          <!-- 客戶頭像與名稱 -->
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-400 flex items-center justify-center text-2xl shadow-inner">
+                👵👩
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="font-bold text-sm text-white">雙人組合怪：控制狂婆婆 ＆ 沉默老公</h3>
+                  <span class="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded font-bold">雙目標</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-0.5">「我兒子每天上班那麼累，行程不要讓他走太多路！但拍照又要好看！」</p>
+              </div>
             </div>
+          </div>
+
+          <!-- 客戶滿意度與挑剔護甲條 (Expectation & Armor) -->
+          <div class="mt-4 space-y-2.5">
             <div>
-              <div class="flex items-center gap-2">
-                <h4 class="font-bold text-white text-sm">敘敘苑 30F 高空燒肉 (全天目標)</h4>
-                <span class="text-[10px] bg-rose-500/30 text-rose-200 px-1.5 py-0.5 rounded font-bold">不可違約</span>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-300 flex items-center gap-1"><i class="fa-solid fa-heart text-rose-400"></i> 客戶心動滿足度 (目標: 80% 成交)</span>
+                <span id="solo-satisfaction-text" class="font-mono font-bold text-amber-300">35 / 100</span>
               </div>
-              <p class="text-xs text-rose-200/70 mt-0.5">包廂已全額預付｜任何分支路線最終必須在 18:15 抵達會合點！</p>
+              <div class="w-full bg-slate-950 rounded-full h-3 overflow-hidden border border-slate-800">
+                <div id="solo-satisfaction-bar" class="bg-gradient-to-r from-amber-500 to-emerald-400 h-3 rounded-full transition-all duration-500" style="width: 35%"></div>
+              </div>
+            </div>
+
+            <!-- 客戶被動詞條 (Passive Affixes) -->
+            <div class="space-y-1.5 pt-2 text-[11px]">
+              <div class="p-2 rounded-lg bg-slate-950 border border-rose-500/30 flex items-center justify-between text-rose-300">
+                <span>⚠️ 婆婆被動【痛風警告】：</span>
+                <span class="font-medium text-slate-200">步數超過 6,000 步直接客訴扣 20 理智</span>
+              </div>
+              <div class="p-2 rounded-lg bg-slate-950 border border-indigo-500/30 flex items-center justify-between text-indigo-300">
+                <span>✨ 隱藏加成【長輩尊榮】：</span>
+                <span class="font-medium text-slate-200">掛載【景觀包車】或【老字號名店】滿意度 2x</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- 第 3 層：分支路線決策層 (Choice Layer: 台場 vs 橫濱 vs 雨備) -->
-        <div class="relative z-10 flex items-center justify-around my-6">
-          
-          <!-- 分支 A 節點：台場鋼彈 & teamLab -->
-          <div class="flex flex-col items-center max-w-[240px]">
-            <div class="text-[11px] font-bold text-cyan-400 mb-1 flex items-center gap-1">
-              <span>分支 A (目前主線)</span>
-              <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-            </div>
-            <div id="node-card-daiba" onclick="selectMapRoute('daiba')" class="map-node node-active cursor-pointer bg-slate-900 border-2 border-cyan-400 p-3.5 rounded-2xl shadow-xl w-full">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-xl">
-                  ⚔️
-                </div>
-                <div>
-                  <h5 class="font-bold text-white text-xs">台場 DiverCity + teamLab</h5>
-                  <p class="text-[10px] text-cyan-300 mt-0.5">精英戰鬥・光影沉浸</p>
-                </div>
-              </div>
-              <div class="mt-2.5 pt-2 border-t border-slate-800 text-[10px] space-y-1 text-slate-300">
-                <div class="flex justify-between"><span>體力消耗 (HP):</span><span class="text-rose-400 font-bold">-24 HP (步行多)</span></div>
-                <div class="flex justify-between"><span>大寶滿意度:</span><span class="text-emerald-400 font-bold">+35 經驗</span></div>
-                <div class="flex justify-between"><span>金幣消耗:</span><span class="text-amber-400 font-bold">-¥9,800</span></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 分支 B 節點：橫濱麵包超人 (幼兒友善防禦流) -->
-          <div class="flex flex-col items-center max-w-[240px]">
-            <div class="text-[11px] font-bold text-violet-400 mb-1 flex items-center gap-1">
-              <span>分支 B (平行時空)</span>
-              <span class="text-[10px] bg-violet-500/20 px-1 rounded text-violet-300">防禦流</span>
-            </div>
-            <div id="node-card-yokohama" onclick="selectMapRoute('yokohama')" class="map-node cursor-pointer bg-slate-900/70 border border-slate-700 hover:border-violet-400 p-3.5 rounded-2xl shadow-xl w-full">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-violet-500/20 border border-violet-400/50 flex items-center justify-center text-xl">
-                  🎪
-                </div>
-                <div>
-                  <h5 class="font-bold text-slate-200 text-xs">橫濱麵包超人 + 紅磚</h5>
-                  <p class="text-[10px] text-violet-300 mt-0.5">幼兒友善・推車暢行</p>
-                </div>
-              </div>
-              <div class="mt-2.5 pt-2 border-t border-slate-800 text-[10px] space-y-1 text-slate-300">
-                <div class="flex justify-between"><span>體力消耗 (HP):</span><span class="text-emerald-400 font-bold">-12 HP (輕鬆推車)</span></div>
-                <div class="flex justify-between"><span>二寶理智線:</span><span class="text-emerald-400 font-bold">+45 (狂熱充飽)</span></div>
-                <div class="flex justify-between"><span>金幣消耗:</span><span class="text-emerald-400 font-bold">-¥7,200 (省錢)</span></div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- 雨備影子節點 (Shadow Relic Node) -->
-        <div class="relative z-10 flex justify-center">
-          <div class="bg-sky-950/40 border border-sky-500/30 px-4 py-2 rounded-xl flex items-center gap-3 text-xs text-sky-200">
-            <span class="text-base">☂️</span>
-            <div>
-              <span class="font-bold text-sky-300">影子備案已掛載：</span>
-              <span>池袋太陽城室內水族館 (遇雨自動觸發無縫轉移)</span>
-            </div>
-            <button onclick="toggleRainFallback()" class="px-2.5 py-1 rounded bg-sky-500/20 text-sky-300 hover:bg-sky-500/30 border border-sky-500/30 text-[11px] font-bold transition">
-              試跑雨備
-            </button>
-          </div>
-        </div>
-
-        <!-- 第 2 層：分叉起點 (Fork Point) -->
-        <div class="relative z-10 flex flex-col items-center my-4">
-          <div class="map-node cursor-pointer bg-slate-900 border-2 border-amber-500/80 rounded-xl px-4 py-2 flex items-center gap-2 shadow-lg" onclick="inspectNode('fork')">
-            <div class="w-6 h-6 rounded-full bg-amber-500 text-slate-950 font-black text-xs flex items-center justify-center">
-              ⌥
-            </div>
-            <span class="text-xs font-bold text-amber-200">時空分水嶺：選擇今日作戰流派</span>
-            <span class="text-[10px] text-slate-400 font-mono">11:30 決策節點</span>
-          </div>
-        </div>
-
-        <!-- 第 1 層：起點 (Camp 營火補給站) -->
-        <div class="relative z-10 flex flex-col items-center">
-          <div class="map-node cursor-pointer bg-slate-900/90 border border-emerald-500/60 rounded-2xl px-5 py-2.5 shadow-lg flex items-center gap-3" onclick="inspectNode('start')">
-            <div class="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-400 flex items-center justify-center text-sm">
-              ⛺
-            </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-bold text-white">上野飯店出發點 (營火整備完畢)</span>
-                <span class="text-[10px] px-1.5 rounded bg-emerald-500/20 text-emerald-400">全員狀態 100%</span>
-              </div>
-              <p class="text-[10px] text-slate-400">Skyliner 直達抵達・推車與防走失繩已裝備</p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- 底部爬塔輔助操作列 -->
-      <div class="mt-4 flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800">
-        <div class="flex items-center gap-2">
-          <button onclick="openSpireDiffMatrix()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-amber-600/30 transition">
-            <i class="fa-solid fa-scale-balanced"></i>
-            雙路線 A/B 數值預測矩陣 (Diff View)
+        <!-- 提交審核按鈕 -->
+        <div class="pt-3 mt-3 border-t border-slate-800 flex items-center justify-between">
+          <span class="text-[11px] text-slate-400">目前預算消耗：<strong class="text-white" id="solo-budget-cost">¥24,000</strong></span>
+          <button onclick="submitClientPR()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-file-circle-check"></i>
+            <span>提交方案審核 (Create PR)</span>
           </button>
-          <button onclick="drawRandomCard()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 text-xs flex items-center gap-1.5 transition">
-            <i class="fa-solid fa-clone"></i>
-            抽取隨機奇遇卡 (Event)
-          </button>
-        </div>
-        <div class="text-[11px] font-mono text-slate-500">
-          SEED: <span class="text-amber-400 font-bold">TYO-2026-ACT3</span>
         </div>
       </div>
 
     </section>
 
-    <!-- 右半邊：卡牌背包（Deck Hand）與目前行程時間軸 -->
-    <section class="xl:w-5/12 p-5 flex flex-col gap-5 overflow-y-auto bg-slate-950/60">
+    <!-- 右側：Git Commit 旅程槽位 (Journey Tree) + 提案手牌庫 -->
+    <section class="xl:w-7/12 p-5 flex flex-col gap-4 overflow-y-auto bg-slate-950">
 
-      <!-- 區域 1：手牌庫 (Hand Deck: 家族應變技能卡) -->
-      <div class="bg-slate-900 border border-amber-950/60 rounded-2xl p-4 shadow-xl">
+      <!-- 核心畫布：客戶的 Master 時間軸槽位 (Journey Slots) -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center gap-2">
-            <div class="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
-            <h3 class="text-xs font-bold text-amber-200 tracking-wider spire-font uppercase">背包隨身卡牌庫 (Active Deck)</h3>
+            <i class="fa-solid fa-code-commit text-amber-400"></i>
+            <h3 class="text-xs font-bold text-white uppercase tracking-wider spire-font">客戶時間軸主線 (Branch: master)</h3>
           </div>
-          <span class="text-[11px] text-slate-400 font-mono">點擊卡牌施放效果</span>
-        </div>
-
-        <p class="text-xs text-slate-400 mb-3">
-          旅遊中遇上突發或疲倦？打出手牌調整行程狀態：
-        </p>
-
-        <!-- 卡牌列表 (StS 卡牌風格) -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          
-          <!-- 卡牌 1: 計程車神速 -->
-          <div onclick="playCard('taxi')" class="card-hover card-glow-gold rounded-xl p-3 cursor-pointer flex flex-col justify-between h-36">
-            <div>
-              <div class="flex justify-between items-center mb-1">
-                <span class="w-5 h-5 rounded-full bg-amber-500 text-slate-950 font-black text-[11px] flex items-center justify-center">2</span>
-                <span class="text-[10px] text-amber-400 font-bold">行動牌</span>
-              </div>
-              <h5 class="text-xs font-black text-amber-200">🚕 GO 計程車</h5>
-              <p class="text-[10px] text-slate-300 mt-1 leading-relaxed">避開地鐵上下樓梯。消耗 ¥2,800，全隊體力 +18 HP。</p>
-            </div>
-            <div class="text-[9px] text-amber-300/80 font-mono text-right">Instant Move</div>
-          </div>
-
-          <!-- 卡牌 2: 布丁與點心安撫術 -->
-          <div onclick="playCard('pudding')" class="card-hover card-glow-blue rounded-xl p-3 cursor-pointer flex flex-col justify-between h-36">
-            <div>
-              <div class="flex justify-between items-center mb-1">
-                <span class="w-5 h-5 rounded-full bg-cyan-500 text-slate-950 font-black text-[11px] flex items-center justify-center">1</span>
-                <span class="text-[10px] text-cyan-300 font-bold">技能牌</span>
-              </div>
-              <h5 class="text-xs font-black text-cyan-100">🍮 布丁安撫術</h5>
-              <p class="text-[10px] text-slate-300 mt-1 leading-relaxed">買便利商店布丁。二寶理智線 +30%，消除崩潰 Debuff。</p>
-            </div>
-            <div class="text-[9px] text-cyan-300/80 font-mono text-right">Buff Child</div>
-          </div>
-
-          <!-- 卡牌 3: 咖啡廳臨時營火 -->
-          <div onclick="playCard('cafe')" class="card-hover card-glow-purple rounded-xl p-3 cursor-pointer flex flex-col justify-between h-36">
-            <div>
-              <div class="flex justify-between items-center mb-1">
-                <span class="w-5 h-5 rounded-full bg-purple-500 text-slate-950 font-black text-[11px] flex items-center justify-center">1</span>
-                <span class="text-[10px] text-purple-300 font-bold">休息牌</span>
-              </div>
-              <h5 class="text-xs font-black text-purple-200">☕ 星巴克營火</h5>
-              <p class="text-[10px] text-slate-300 mt-1 leading-relaxed">大人喝咖啡休整 40 分鐘。父母精神值全滿，推車停泊。</p>
-            </div>
-            <div class="text-[9px] text-purple-300/80 font-mono text-right">Short Rest</div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- 區域 2：目前分支路線的詳細時空卡片 (Timeline Artifact) -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex-1 flex flex-col shadow-inner">
-        <div class="flex items-center justify-between mb-3">
-          <div>
-            <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400" id="current-timeline-tag">當前爬塔路線：分支 A (台場進攻流)</span>
-            <h3 class="text-base font-bold text-white mt-0.5" id="current-timeline-title">Day 3 詳細時間軸與推車動線</h3>
-          </div>
-          <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
-            無衝突 ✓
-          </span>
-        </div>
-
-        <!-- 行程項目動態渲染清單 -->
-        <div id="spire-timeline-list" class="space-y-3 flex-1 overflow-y-auto pr-1">
-          <!-- JS 動態填入 -->
-        </div>
-
-        <!-- 尖塔快速決策輸入 -->
-        <div class="mt-4 pt-3 border-t border-slate-800">
-          <div class="relative">
-            <input type="text" id="spire-input" placeholder="對 AI 發出決策調度（例如：下午加個蛋糕店、插入 30 分鐘推車午休）..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500">
-            <button onclick="handleSpireCommand()" class="absolute right-1.5 top-1.5 bottom-1.5 px-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold transition">
-              AI 調度
+          <div class="flex items-center gap-2">
+            <button onclick="soloRebase()" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-500/30 text-[11px] font-bold transition">
+              <i class="fa-solid fa-shuffle mr-1"></i> Git Rebase (順路重排)
+            </button>
+            <button onclick="clearSlots()" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 text-[11px] transition">
+              清空重排
             </button>
           </div>
         </div>
 
+        <p class="text-xs text-slate-400 mb-3">
+          打出下方手牌，將景點與休息點 Commit 掛載至對應時段。相鄰地區將觸發【順路連鎖 Combo】！
+        </p>
+
+        <!-- 4 大時間槽位 -->
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          
+          <!-- 槽位 1：上午 -->
+          <div id="slot-morning" class="slot-empty rounded-xl p-3 min-h-[130px] flex flex-col justify-between transition-all">
+            <div class="flex justify-between items-center text-[10px] text-slate-400">
+              <span class="font-bold text-amber-400">SLOT #1 上午</span>
+              <span>10:00 - 12:00</span>
+            </div>
+            <div id="slot-content-morning" class="text-center py-4 text-xs text-slate-600">
+              點擊下方卡牌掛載
+            </div>
+            <div class="text-[9px] text-slate-500 text-right">Commit Slot</div>
+          </div>
+
+          <!-- 槽位 2：午餐 -->
+          <div id="slot-lunch" class="slot-empty rounded-xl p-3 min-h-[130px] flex flex-col justify-between transition-all">
+            <div class="flex justify-between items-center text-[10px] text-slate-400">
+              <span class="font-bold text-amber-400">SLOT #2 午餐</span>
+              <span>12:30 - 14:00</span>
+            </div>
+            <div id="slot-content-lunch" class="text-center py-4 text-xs text-slate-600">
+              點擊下方卡牌掛載
+            </div>
+            <div class="text-[9px] text-slate-500 text-right">Commit Slot</div>
+          </div>
+
+          <!-- 槽位 3：下午 -->
+          <div id="slot-afternoon" class="slot-empty rounded-xl p-3 min-h-[130px] flex flex-col justify-between transition-all">
+            <div class="flex justify-between items-center text-[10px] text-slate-400">
+              <span class="font-bold text-amber-400">SLOT #3 下午</span>
+              <span>14:30 - 17:00</span>
+            </div>
+            <div id="slot-content-afternoon" class="text-center py-4 text-xs text-slate-600">
+              點擊下方卡牌掛載
+            </div>
+            <div class="text-[9px] text-slate-500 text-right">Commit Slot</div>
+          </div>
+
+          <!-- 槽位 4：晚餐 (Hard Lock) -->
+          <div id="slot-dinner" class="slot-filled rounded-xl p-3 min-h-[130px] flex flex-col justify-between transition-all border-rose-500/40">
+            <div class="flex justify-between items-center text-[10px]">
+              <span class="font-bold text-rose-400">SLOT #4 晚餐 (鎖定)</span>
+              <span class="text-rose-300 font-mono">18:00</span>
+            </div>
+            <div class="py-2">
+              <h5 class="font-bold text-xs text-white">晴空塔敘敘苑高空燒肉</h5>
+              <p class="text-[10px] text-slate-400 mt-0.5">預約訂金已鎖死・滿意度基底 +20</p>
+            </div>
+            <div class="text-[9px] text-rose-400 font-bold text-right"><i class="fa-solid fa-lock mr-1"></i>Hard Lock</div>
+          </div>
+
+        </div>
+
+        <!-- Combo 回饋資訊條 -->
+        <div id="solo-combo-bar" class="mt-3 p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> 連鎖狀態：<strong class="text-slate-200" id="combo-desc">尚無連鎖加成</strong></span>
+          <span class="font-mono text-emerald-400" id="combo-bonus">+0 滿意度</span>
+        </div>
+      </div>
+
+      <!-- 提案手牌庫 (Proposal Hand Deck) -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex-1 flex flex-col shadow-inner">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+            <h4 class="text-xs font-bold text-white uppercase tracking-wider">社畜提案手牌庫 (Hand Deck)</h4>
+          </div>
+          <span class="text-[11px] text-slate-400 font-mono">點擊手牌自動填入可用槽位</span>
+        </div>
+
+        <!-- 6 張可選提案卡牌 -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 flex-1">
+          
+          <!-- 卡牌 1：淺草人力車 -->
+          <div onclick="commitCardToSlot('rickshaw')" class="card-hover cursor-pointer p-3 rounded-xl bg-slate-950 border border-cyan-500/40 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center text-[10px] mb-1">
+                <span class="w-4 h-4 rounded-full bg-cyan-500 text-slate-950 font-black flex items-center justify-center text-[9px]">1</span>
+                <span class="text-cyan-300 font-bold">[淺草] 長輩友善</span>
+              </div>
+              <h5 class="font-bold text-xs text-white">🏮 淺草雷門人力車巡禮</h5>
+              <p class="text-[10px] text-slate-400 mt-1">免走路！車伕導覽拍美照。婆婆滿意度狂飆 +25，步數 0。</p>
+            </div>
+            <div class="text-[9px] text-slate-500 text-right mt-2">區域: 淺草/台東區</div>
+          </div>
+
+          <!-- 卡牌 2：上野鰻魚飯老店 -->
+          <div onclick="commitCardToSlot('eel')" class="card-hover cursor-pointer p-3 rounded-xl bg-slate-950 border border-amber-500/40 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center text-[10px] mb-1">
+                <span class="w-4 h-4 rounded-full bg-amber-500 text-slate-950 font-black flex items-center justify-center text-[9px]">2</span>
+                <span class="text-amber-300 font-bold">[上野] 美食排隊</span>
+              </div>
+              <h5 class="font-bold text-xs text-white">🍱 上野百年鰻魚老店</h5>
+              <p class="text-[10px] text-slate-400 mt-1">米其林百年名店。滿意度 +30，若接在淺草後觸發【順路連鎖 +15】。</p>
+            </div>
+            <div class="text-[9px] text-slate-500 text-right mt-2">區域: 上野</div>
+          </div>
+
+          <!-- 卡牌 3：澀谷暴走血拼 (地雷卡) -->
+          <div onclick="commitCardToSlot('shibuya')" class="card-hover cursor-pointer p-3 rounded-xl bg-slate-950 border border-rose-500/40 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center text-[10px] mb-1">
+                <span class="w-4 h-4 rounded-full bg-rose-500 text-slate-950 font-black flex items-center justify-center text-[9px]">1</span>
+                <span class="text-rose-300 font-bold">[澀谷] 暴走特種兵</span>
+              </div>
+              <h5 class="font-bold text-xs text-white">🛍️ 澀谷十字路口掃街</h5>
+              <p class="text-[10px] text-slate-400 mt-1">潮流打卡！滿意度 +25，但步數 +7,000（高機率引爆婆婆痛風）。</p>
+            </div>
+            <div class="text-[9px] text-slate-500 text-right mt-2">區域: 澀谷 (遠程)</div>
+          </div>
+
+          <!-- 卡牌 4：晴空塔景觀咖啡休息 -->
+          <div onclick="commitCardToSlot('skytree_cafe')" class="card-hover cursor-pointer p-3 rounded-xl bg-slate-950 border border-purple-500/40 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center text-[10px] mb-1">
+                <span class="w-4 h-4 rounded-full bg-purple-500 text-slate-950 font-black flex items-center justify-center text-[9px]">1</span>
+                <span class="text-purple-300 font-bold">[押上] 緩衝休息</span>
+              </div>
+              <h5 class="font-bold text-xs text-white">☕ 押上高空景觀下午茶</h5>
+              <p class="text-[10px] text-slate-400 mt-1">坐著休息看風景。消除全隊疲勞，順暢銜接 18:00 燒肉晚餐！</p>
+            </div>
+            <div class="text-[9px] text-slate-500 text-right mt-2">區域: 押上</div>
+          </div>
+
+          <!-- 卡牌 5：話術防禦牌 -->
+          <div onclick="commitCardToSlot('talk_defense')" class="card-hover cursor-pointer p-3 rounded-xl bg-slate-950 border border-emerald-500/40 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center text-[10px] mb-1">
+                <span class="w-4 h-4 rounded-full bg-emerald-500 text-slate-950 font-black flex items-center justify-center text-[9px]">1</span>
+                <span class="text-emerald-300 font-bold">業務防禦話術</span>
+              </div>
+              <h5 class="font-bold text-xs text-white">🛡️ 「這叫私房深度走讀」</h5>
+              <p class="text-[10px] text-slate-400 mt-1">化解任何超額步數的客訴扣分，本關額外獲得客戶挑剔免疫。</p>
+            </div>
+            <div class="text-[9px] text-slate-500 text-right mt-2">技能防禦</div>
+          </div>
+
+          <!-- 卡牌 6：高級包車直達 -->
+          <div onclick="commitCardToSlot('vip_van')" class="card-hover cursor-pointer p-3 rounded-xl bg-slate-950 border border-amber-300/40 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center text-[10px] mb-1">
+                <span class="w-4 h-4 rounded-full bg-amber-400 text-slate-950 font-black flex items-center justify-center text-[9px]">2</span>
+                <span class="text-amber-200 font-bold">阿爾法 Alphard 包車</span>
+              </div>
+              <h5 class="font-bold text-xs text-white">🚐 全程尊榮 Alphard 接送</h5>
+              <p class="text-[10px] text-slate-400 mt-1">消耗金幣 ¥18,000。婆婆與老公尊榮感大滿足 +40，免疫跨區扣分。</p>
+            </div>
+            <div class="text-[9px] text-slate-500 text-right mt-2">豪華交通</div>
+          </div>
+
+        </div>
       </div>
 
     </section>
 
   </main>
 
-  <!-- 彈窗 1: 尖塔 A/B 決策對照矩陣 (Slay the Spire Diff Matrix) -->
-  <div id="spire-diff-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-amber-500/40 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+
+  <!-- ============================================================== -->
+  <!-- 模式二：😈【多人模式：主策劃 vs 搞事天團 (半合作 Secret Agendas)】 -->
+  <!-- ============================================================== -->
+  <main id="multi-mode-view" class="flex-1 hidden flex-col xl:flex-row overflow-hidden">
+
+    <!-- 左側：主行程官（苦逼老爸）的推進主線與 PR 審查台 -->
+    <section class="xl:w-7/12 border-r border-slate-800/80 p-5 flex flex-col overflow-y-auto bg-slate-950">
       
-      <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950">
-        <div>
+      <!-- 頂部：命運共同體核心指標 (全員必達 Hard Lock) -->
+      <div class="bg-gradient-to-r from-rose-950/60 via-slate-900 to-amber-950/60 border border-rose-500/40 rounded-2xl p-4 mb-4 shadow-xl">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
           <div class="flex items-center gap-2">
-            <i class="fa-solid fa-scale-balanced text-amber-400 text-lg"></i>
-            <h3 class="font-bold text-base text-white spire-font">爬塔決策對比矩陣 (Branch Comparison Diff)</h3>
+            <span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 text-[10px] font-bold border border-rose-500/40">命運共同體 (Co-op Victory)</span>
+            <h3 class="font-bold text-sm text-white">終點 Hard Lock：18:30 晴空塔燒肉 (超時全員全輸！)</h3>
           </div>
-          <p class="text-xs text-slate-400 mt-0.5">預見未來：一眼掌握兩條支線對家庭體力、幼兒崩潰率與預算的真實影響</p>
-        </div>
-        <button onclick="closeSpireDiffModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
-      </div>
-
-      <!-- 核心對照卡片 -->
-      <div class="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        
-        <!-- 左邊：分支 A (台場) -->
-        <div class="bg-slate-950 border-2 border-cyan-500/50 rounded-xl p-5 flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-xs font-bold px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300">路線 A【沉浸進攻流】</span>
-              <span class="text-xs text-slate-400">台場科技震撼</span>
-            </div>
-            <h4 class="font-bold text-white text-base mb-3">DiverCity 鋼彈 + teamLab 豐洲</h4>
-
-            <div class="space-y-3 text-xs text-slate-300 mb-6">
-              <div class="flex justify-between border-b border-slate-800/80 pb-2">
-                <span class="text-slate-400">體力扣減預估：</span>
-                <span class="font-bold text-rose-400">-24 HP（場館極大需常抱）</span>
-              </div>
-              <div class="flex justify-between border-b border-slate-800/80 pb-2">
-                <span class="text-slate-400">推車步數：</span>
-                <span class="font-semibold text-amber-400">約 8,200 步</span>
-              </div>
-              <div class="flex justify-between border-b border-slate-800/80 pb-2">
-                <span class="text-slate-400">大寶 (5歲) 體驗：</span>
-                <span class="font-semibold text-emerald-400">★★★★★ (光影水景拍照極佳)</span>
-              </div>
-              <div class="flex justify-between border-b border-slate-800/80 pb-2">
-                <span class="text-slate-400">二寶 (2歲) 理智：</span>
-                <span class="font-semibold text-amber-400">★★★☆☆ (水深需大人抱)</span>
-              </div>
-              <div class="flex justify-between pb-1">
-                <span class="text-slate-400">金幣花費：</span>
-                <span class="font-semibold text-white">¥9,800</span>
-              </div>
-            </div>
-          </div>
-
-          <button onclick="confirmRoute('daiba')" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition">
-            採納此路線 (維持當前)
-          </button>
+          <span class="text-xs font-mono font-bold text-amber-300" id="multi-time-remaining">剩餘時間：210 分鐘</span>
         </div>
 
-        <!-- 右邊：分支 B (橫濱) -->
-        <div class="bg-slate-950 border-2 border-violet-500/60 rounded-xl p-5 flex flex-col justify-between relative shadow-lg shadow-violet-950/40">
-          <div class="absolute -top-3 right-4 bg-gradient-to-r from-violet-500 to-amber-500 text-slate-950 font-black text-[10px] px-2.5 py-0.5 rounded-full shadow">
-            👑 AI 推薦：幼兒防禦流
-          </div>
-          <div>
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-xs font-bold px-2 py-0.5 rounded bg-violet-500/20 text-violet-300">路線 B【幼兒安心防禦流】</span>
-              <span class="text-xs text-slate-400">橫濱港灣舒壓</span>
-            </div>
-            <h4 class="font-bold text-white text-base mb-3">麵包超人博物館 + 紅磚倉庫</h4>
-
-            <div class="space-y-3 text-xs text-slate-300 mb-6">
-              <div class="flex justify-between border-b border-slate-800/80 pb-2">
-                <span class="text-slate-400">體力扣減預估：</span>
-                <span class="font-bold text-emerald-400">-12 HP（全館無障礙好推）</span>
-              </div>
-              <div class="flex justify-between border-b border-slate-800/80 pb-2">
-                <span class="text-slate-400">推車步數：</span>
-                <span class="font-semibold text-emerald-400">約 6,000 步</span>
-              </div>
-              <div class="flex justify-between border-b border-slate-800/80 pb-2">
-                <span class="text-slate-400">大寶 (5歲) 體驗：</span>
-                <span class="font-semibold text-violet-300">★★★★☆ (周邊與造型麵包)</span>
-              </div>
-              <div class="flex justify-between border-b border-slate-800/80 pb-2">
-                <span class="text-slate-400">二寶 (2歲) 理智：</span>
-                <span class="font-semibold text-emerald-400">★★★★★ (理智線狂飆+45)</span>
-              </div>
-              <div class="flex justify-between pb-1">
-                <span class="text-slate-400">金幣花費：</span>
-                <span class="font-semibold text-emerald-400">¥7,200（省 ¥2,600）</span>
-              </div>
-            </div>
-          </div>
-
-          <button onclick="confirmRoute('yokohama')" class="w-full py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-lg shadow-violet-600/30 transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-code-merge"></i>
-            一鍵採納此方案 (Merge into Main)
-          </button>
-        </div>
-
-      </div>
-
-    </div>
-  </div>
-
-  <!-- 彈窗 2: 突發詛咒事件 (Curse / Hotfix Modal) -->
-  <div id="curse-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-rose-500/50 rounded-2xl max-w-lg w-full p-6 shadow-2xl">
-      <div class="flex items-center gap-3 text-rose-400 mb-3">
-        <div class="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 text-xl font-black">
-          ☠️
-        </div>
+        <!-- 隊伍氣氛值條 (Sanity) -->
         <div>
-          <h3 class="font-bold text-base text-white spire-font">遭遇突發詛咒事件 (Curse Encounter)</h3>
-          <p class="text-xs text-rose-300/80">觸發隨機負面狀態！AI 立即啟動 Rebase 急救重排機制</p>
+          <div class="flex justify-between text-xs mb-1">
+            <span class="text-slate-300">家庭氣氛值 (Mood): 跌破 0 觸發全員冷戰團滅</span>
+            <span id="multi-mood-text" class="font-mono font-bold text-emerald-400">80% (和樂融融)</span>
+          </div>
+          <div class="w-full bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800">
+            <div id="multi-mood-bar" class="bg-gradient-to-r from-rose-500 via-amber-500 to-emerald-400 h-2.5 rounded-full transition-all duration-300" style="width: 80%"></div>
+          </div>
         </div>
       </div>
 
-      <div class="space-y-3 my-5">
-        <label class="block p-3.5 rounded-xl border border-slate-700 bg-slate-950/80 hover:border-rose-400/80 cursor-pointer transition">
-          <div class="flex items-center gap-3">
-            <input type="radio" name="curse_type" value="fever" checked class="text-rose-500 focus:ring-rose-500">
-            <div>
-              <div class="font-semibold text-sm text-white flex items-center gap-1.5">
-                <span>🌡️ 詛咒：【幼兒高燒斷電大哭】</span>
-                <span class="text-[10px] bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded font-bold">全隊 Debuff</span>
+      <!-- 待審查的 Pull Request 列表 (審查法官工作區) -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex-1 flex flex-col shadow-inner">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-code-pull-request text-indigo-400"></i>
+            <h4 class="text-xs font-bold text-white uppercase tracking-wider">待審查 Pull Request 隊列 (隊友臨時起意)</h4>
+          </div>
+          <span class="text-[11px] text-slate-400 font-mono">主策劃擁有 Merge / Reject 裁決權</span>
+        </div>
+
+        <p class="text-xs text-slate-400 mb-3">
+          隊友打出願望牌會發起 PR。採納 (Merge) 隊友得分但消耗全團時間；駁回 (Reject) 保住時間但該隊友累積怨念！
+        </p>
+
+        <!-- PR 項目卡片容器 -->
+        <div id="pr-queue-container" class="space-y-3 flex-1 overflow-y-auto pr-1">
+          
+          <!-- PR 範例 1：老婆發起 -->
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-violet-500/40 flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-violet-500/20 border border-violet-400 flex items-center justify-center text-sm">
+                  👩
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-white">老婆發起 PR #04：銀座松本清大掃貨</span>
+                    <span class="text-[10px] bg-violet-500/20 text-violet-300 px-1.5 py-0.2 rounded font-bold">秘密願望</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 mt-0.5">「這家有滿萬再折 7% 免稅！排隊退稅只要 40 分鐘就好嘛！」</p>
+                </div>
               </div>
-              <p class="text-xs text-slate-400 mt-1">體力每分鐘劇烈失血。AI 自動排定計程車回飯店修養 2.5 小時，並鎖死保住 18:30 燒肉 Boss！</p>
+              <span class="text-[11px] font-mono text-rose-400 font-bold">時間 -45 min</span>
+            </div>
+
+            <div class="mt-3 pt-2 border-t border-slate-800 flex items-center justify-between">
+              <span class="text-[10px] text-slate-400">若 Reject：老婆怨念值 +35</span>
+              <div class="flex gap-2">
+                <button onclick="rejectPR('wife')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-bold transition">
+                  Reject (殘酷駁回)
+                </button>
+                <button onclick="compromisePR('wife')" class="px-3 py-1.5 rounded-lg bg-indigo-900/60 hover:bg-indigo-800 text-indigo-300 border border-indigo-500/30 text-xs font-bold transition">
+                  Compromise (送咖啡安撫)
+                </button>
+                <button onclick="mergePR('wife')" class="px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold shadow-md shadow-violet-600/30 transition">
+                  <i class="fa-solid fa-code-merge mr-1"></i> Merge (採納入行程)
+                </button>
+              </div>
             </div>
           </div>
-        </label>
 
-        <label class="block p-3.5 rounded-xl border border-slate-700 bg-slate-950/80 hover:border-rose-400/80 cursor-pointer transition">
-          <div class="flex items-center gap-3">
-            <input type="radio" name="curse_type" value="rain" class="text-rose-500 focus:ring-rose-500">
+          <!-- PR 範例 2：二寶發起 -->
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-amber-500/40 flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center text-sm">
+                  👶
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-white">二寶發起 PR #05：寶可夢扭蛋機倒地不走</span>
+                    <span class="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded font-bold">幼兒耍賴</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 mt-0.5">「我要皮卡丘！不轉我就在地下街地板滾給你看！」</p>
+                </div>
+              </div>
+              <span class="text-[11px] font-mono text-rose-400 font-bold">時間 -25 min</span>
+            </div>
+
+            <div class="mt-3 pt-2 border-t border-slate-800 flex items-center justify-between">
+              <span class="text-[10px] text-slate-400">若 Reject：二寶當場暴哭扣氣氛 20%</span>
+              <div class="flex gap-2">
+                <button onclick="rejectPR('child')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-bold transition">
+                  Reject (抱著硬扛走)
+                </button>
+                <button onclick="compromisePR('child')" class="px-3 py-1.5 rounded-lg bg-indigo-900/60 hover:bg-indigo-800 text-indigo-300 border border-indigo-500/30 text-xs font-bold transition">
+                  給布丁塞嘴
+                </button>
+                <button onclick="mergePR('child')" class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-slate-950 text-xs font-bold shadow-md shadow-amber-600/30 transition">
+                  <i class="fa-solid fa-code-merge mr-1"></i> Merge (投幣換和平)
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 主策劃專屬 Git 大招 -->
+        <div class="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between">
+          <span class="text-xs text-slate-400">團長底牌：</span>
+          <div class="flex gap-2">
+            <button onclick="dadForcePush()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white text-xs font-bold shadow-md transition">
+              <i class="fa-solid fa-bolt mr-1"></i> Git Force Push (計程車直送下一站)
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- 右側：搞事天團儀表板 (老婆 / 小孩 / 朋友的秘密人生願望與搞事手牌) -->
+    <section class="xl:w-5/12 p-5 flex flex-col gap-4 overflow-y-auto bg-slate-950/80">
+      
+      <div class="flex items-center justify-between">
+        <h3 class="text-xs font-bold text-amber-200 spire-font tracking-wider uppercase">搞事天團陣營 (Secret Agendas)</h3>
+        <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded">各自爭寵打卡</span>
+      </div>
+
+      <!-- 角色 1：老婆 (購物慾望型) -->
+      <div class="bg-slate-900 border border-violet-500/30 rounded-2xl p-4 shadow-md">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2.5">
+            <span class="text-xl">👩</span>
             <div>
-              <div class="font-semibold text-sm text-white">🌧️ 詛咒：【突發午後狂風暴雨】</div>
-              <p class="text-xs text-slate-400 mt-1">所有戶外移動耗時 +40%。立刻啟動室內水族館影子備案。</p>
+              <h4 class="font-bold text-xs text-white">老婆 (財務美妝擔當)</h4>
+              <p class="text-[10px] text-violet-300">隱藏願望：完成 2 次免稅採購，買好買滿！</p>
             </div>
           </div>
-        </label>
+          <div class="text-right">
+            <span class="text-[10px] text-slate-400">目前進度:</span>
+            <span class="font-mono font-bold text-violet-300 block text-xs" id="wife-progress">1 / 2 達成</span>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-2">
+          <button onclick="triggerTeammatePR('wife_cosmetics')" class="flex-1 py-1.5 rounded-lg bg-slate-950 border border-violet-500/40 text-violet-200 text-[11px] font-semibold hover:bg-violet-950/40 transition">
+            丟出牌：【突然想看這家專櫃】
+          </button>
+        </div>
       </div>
 
-      <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
-        <button onclick="closeCurseModal()" class="px-4 py-2 text-xs text-slate-400 hover:text-white">先別管</button>
-        <button onclick="resolveCurse()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-bold text-xs shadow-lg shadow-rose-600/30 flex items-center gap-1.5">
-          <i class="fa-solid fa-wand-magic-sparkles"></i>
-          施展 Rebase 急救重排！
-        </button>
+      <!-- 角色 2：二寶 (體力/情緒未爆彈) -->
+      <div class="bg-slate-900 border border-amber-500/30 rounded-2xl p-4 shadow-md">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2.5">
+            <span class="text-xl">👶</span>
+            <div>
+              <h4 class="font-bold text-xs text-white">2歲二寶 (終極未爆彈)</h4>
+              <p class="text-[10px] text-amber-300">隱藏願望：累積吃 2 次點心，推車午睡 40 分鐘！</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-slate-400">目前進度:</span>
+            <span class="font-mono font-bold text-amber-300 block text-xs" id="child-progress">0 / 2 達成</span>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-2">
+          <button onclick="triggerTeammatePR('child_tantrum')" class="flex-1 py-1.5 rounded-lg bg-slate-950 border border-amber-500/40 text-amber-200 text-[11px] font-semibold hover:bg-amber-950/40 transition">
+            丟出牌：【我要吃霜淇淋不然哭】
+          </button>
+        </div>
       </div>
-    </div>
-  </div>
 
-  <!-- 彈窗 3: 隨機事件抽卡 (Random Event Draw) -->
-  <div id="event-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-amber-500/50 rounded-2xl max-w-md w-full p-6 shadow-2xl text-center">
-      <div class="w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-400 mx-auto flex items-center justify-center text-3xl mb-3 shadow-lg shadow-amber-500/30">
-        ❓
+      <!-- 角色 3：攝影狂隊友 (打卡狂魔) -->
+      <div class="bg-slate-900 border border-cyan-500/30 rounded-2xl p-4 shadow-md">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2.5">
+            <span class="text-xl">📸</span>
+            <div>
+              <h4 class="font-bold text-xs text-white">攝影師朋友 (出片狂魔)</h4>
+              <p class="text-[10px] text-cyan-300">隱藏願望：在魔幻時刻拍滿 50 張網美照！</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-slate-400">目前進度:</span>
+            <span class="font-mono font-bold text-cyan-300 block text-xs" id="friend-progress">0 / 1 達成</span>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-2">
+          <button onclick="triggerTeammatePR('friend_photo')" class="flex-1 py-1.5 rounded-lg bg-slate-950 border border-cyan-500/40 text-cyan-200 text-[11px] font-semibold hover:bg-cyan-950/40 transition">
+            丟出牌：【這道光太美了等我15分】
+          </button>
+        </div>
       </div>
-      <h3 class="text-lg font-bold text-amber-200 spire-font" id="event-modal-title">路遇神秘鯛魚燒老店！</h3>
-      <p class="text-xs text-slate-300 mt-2 leading-relaxed" id="event-modal-desc">
-        在轉角小巷發現排隊 5 分鐘的炭烤鯛魚燒。香氣四溢，全家人眼睛都亮了！
+
+      <!-- 結算計分提示 -->
+      <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-[11px] text-slate-400">
+        <i class="fa-solid fa-circle-info text-amber-400 mr-1"></i>
+        <strong>獲勝規則：</strong>只要 18:30 前全團平安抵達晴空塔燒肉，大目標達成！屆時結算誰的【秘密願望】完成最多，誰就是今日「旅行 MVP 大贏家」！
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- 彈窗：PR 審核成功 / 結算結果視窗 -->
+  <div id="result-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-amber-500/40 rounded-2xl max-w-md w-full p-6 shadow-2xl text-center">
+      <div class="w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-400 mx-auto flex items-center justify-center text-3xl mb-3 shadow-lg shadow-amber-500/30" id="result-modal-icon">
+        🎉
+      </div>
+      <h3 class="text-lg font-bold text-amber-200 spire-font" id="result-modal-title">提案審核成功！</h3>
+      <p class="text-xs text-slate-300 mt-2 leading-relaxed" id="result-modal-desc">
+        內容詳細說明
       </p>
       
-      <div class="my-5 p-3 rounded-xl bg-slate-950 border border-amber-900/50 text-xs text-slate-300 space-y-1">
-        <div class="flex justify-between"><span>金幣消耗:</span><span class="text-rose-400 font-bold">-¥600</span></div>
-        <div class="flex justify-between"><span>隊伍體力 (HP):</span><span class="text-emerald-400 font-bold">+15 HP</span></div>
-        <div class="flex justify-between"><span>二寶理智線:</span><span class="text-emerald-400 font-bold">+20%</span></div>
+      <div class="my-5 p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 space-y-1.5" id="result-modal-stats">
+        <!-- 數值差異 -->
       </div>
 
-      <div class="flex gap-2">
-        <button onclick="acceptEventReward()" class="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30">
-          一口買下！享受美食
-        </button>
-        <button onclick="closeEventModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs">
-          忍痛略過
-        </button>
-      </div>
+      <button onclick="closeResultModal()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs shadow-lg shadow-amber-600/30">
+        太棒了！繼續前進
+      </button>
     </div>
   </div>
 
-  <!-- Toast 通知浮條 -->
+  <!-- Toast 浮條 -->
   <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 border border-amber-500/60 text-white px-4 py-3 rounded-xl shadow-2xl hidden items-center gap-3 z-50 text-xs transition-all">
     <i class="fa-solid fa-circle-check text-amber-400 text-sm" id="toast-icon"></i>
     <span id="toast-message">操作成功</span>
   </div>
 
   <script>
-    // 遊戲狀態與 LifeGit 狀態機
-    let partyState = {
-      hp: 76,
-      sanity: 85,
-      gold: 18500,
-      activeRoute: 'daiba' // 'daiba' | 'yokohama' | 'rain' | 'hotfix'
-    };
+    // 全域模式切換
+    let activeMode = 'solo'; // 'solo' | 'multi'
 
-    const routeSchedules = {
-      daiba: {
-        tag: "當前爬塔路線：分支 A (台場進攻流)",
-        title: "Day 3 詳細時間軸與推車動線 (台場)",
-        items: [
-          { time: "09:30 - 11:30", type: "百合海鷗號電車", icon: "🚃", title: "台場 DiverCity 實物大鋼彈", desc: "11:00 變形燈光秀。館內母嬰室設備齊全，借用娃娃車。", stat: "HP -10" },
-          { time: "12:00 - 14:30", type: "營火休整 + 午餐", icon: "⛺", title: "DiverCity 美食街 & 2歲底迪午睡", desc: "爸爸顧推車喝咖啡，媽媽帶大寶逛生活雜貨玩具店。", stat: "HP +15" },
-          { time: "15:00 - 17:30", type: "精英打卡：沉浸光影", icon: "⚔️", title: "teamLab Planets 豐洲", desc: "光影赤腳踩水！小孩極度興奮（自備一套替換衣物）。", stat: "HP -20 | 大寶經驗 +35" },
-          { time: "18:30 - 20:30", type: "👑 核心 HARD LOCK", icon: "👑", title: "晴空塔 30F 敘敘苑燒肉", desc: "包廂不可取消。完美卡點抵達享受高空夜景晚餐！", locked: true }
-        ]
-      },
-      yokohama: {
-        tag: "當前爬塔路線：分支 B (橫濱幼兒防禦流)",
-        title: "Day 3 詳細時間軸與推車動線 (橫濱)",
-        items: [
-          { time: "09:15 - 10:15", type: "東急直達特急", icon: "🚅", title: "前往橫濱港未來 (Minatomirai)", desc: "全程無障礙電梯直達地下月台，無須換乘，全車推車好上。", stat: "HP -5" },
-          { time: "10:30 - 14:00", type: "幼兒防禦核心", icon: "🎪", title: "橫濱麵包超人兒童博物館", desc: "12:00 現場唱跳劇場，全館推車友善，享用造型麵包午餐。", stat: "二寶理智 +45 | HP -8" },
-          { time: "14:30 - 16:30", type: "港灣休整散步", icon: "⛺", title: "橫濱紅磚倉庫 & 象之鼻咖啡廳", desc: "海風木棧道散步，二寶推車午睡，大寶享用美味冰淇淋。", stat: "HP +10" },
-          { time: "18:30 - 20:30", type: "👑 核心 HARD LOCK", icon: "👑", title: "晴空塔 30F 敘敘苑燒肉", desc: "搭特急準時返回押上站，順利銜接燒肉訂位！", locked: true }
-        ]
-      },
-      rain: {
-        tag: "當前爬塔路線：☂️ 雨備影子方案 (池袋室內流)",
-        title: "Day 3 詳細時間軸 (池袋室內水族館)",
-        items: [
-          { time: "10:00 - 12:30", type: "全室內高空水族館", icon: "🐟", title: "池袋 Sunshine City 水族館", desc: "空中企鵝通道有雨遮，室內水母隧道極度推車友善，零淋雨。", stat: "HP -8" },
-          { time: "12:30 - 14:30", type: "室內商場營火", icon: "⛺", title: "太陽城商場午餐 + 寶可夢中心", desc: "育嬰室完善，全天室內無風雨風險。", stat: "HP +12" },
-          { time: "15:00 - 17:00", type: "室內放電樂園", icon: "🎮", title: "南夢宮主題室內遊樂場", desc: "雨天專屬備案：讓兩隻小孩安全放電無負擔。", stat: "理智 +20" },
-          { time: "18:30 - 20:30", type: "👑 核心 HARD LOCK", icon: "👑", title: "晴空塔 30F 敘敘苑燒肉", desc: "地下鐵直達押上，全程不淋雨順利赴約！", locked: true }
-        ]
-      },
-      hotfix: {
-        tag: "當前爬塔路線：🚨 Hotfix 急救重排 (幼兒回血流)",
-        title: "Day 3 急救重排時間軸 (二寶高燒回血修整)",
-        items: [
-          { time: "14:15 - 14:45", type: "計程車緊急轉移", icon: "🚕", title: "GO 計程車直達上野飯店", desc: "避開擁擠電車與顛簸，讓發燒哭鬧的二寶在車上安睡。", stat: "金幣 -¥2,800 | 二寶安撫" },
-          { time: "14:45 - 17:30", type: "🏨 飯店營火深層回血", icon: "⛺", title: "房間休養 / 體溫監控 / 補水", desc: "媽媽在房內照顧，爸爸帶大寶去超商採購退熱貼與點心。", stat: "HP +35 | 二寶理智 +40" },
-          { time: "17:45 - 18:25", type: "準時專車銜接", icon: "🚕", title: "專車抵達晴空塔敘敘苑", desc: "零匆忙趕路！二寶體力恢復 75%，保住不可取消的珍貴訂位！", stat: "完美卡點" },
-          { time: "18:30 - 20:30", type: "👑 核心 HARD LOCK：保住！", icon: "👑", title: "晴空塔 30F 敘敘苑燒肉", desc: "全員到齊！享受無壓力的美味晚餐。", locked: true }
-        ]
+    // 單人模式狀態機
+    const soloState = {
+      mentalHp: 75,
+      satisfaction: 35,
+      budgetCost: 24000,
+      slots: {
+        morning: null,
+        lunch: null,
+        afternoon: null
       }
     };
 
-    function updateStatsUI() {
-      document.getElementById('stat-hp-text').innerText = `${partyState.hp} / 100`;
-      document.getElementById('stat-hp-bar').style.width = `${Math.min(100, Math.max(0, partyState.hp))}%`;
+    // 多人模式狀態機
+    const multiState = {
+      remainingTime: 210, // 分鐘
+      partyMood: 80,
+      wifeScore: 1,
+      childScore: 0,
+      friendScore: 0
+    };
 
-      document.getElementById('stat-sanity-text').innerText = `${partyState.sanity}% ${partyState.sanity > 70 ? '(開心)' : partyState.sanity > 40 ? '(疲累)' : '(崩潰邊緣)'}`;
-      document.getElementById('stat-sanity-bar').style.width = `${Math.min(100, Math.max(0, partyState.sanity))}%`;
+    const cardDatabase = {
+      rickshaw: { title: "🏮 淺草雷門人力車巡禮", tag: "淺草", area: "asakusa", satisfaction: 25, cost: 8000, steps: 0, desc: "婆婆滿意度狂飆，步數為 0" },
+      eel: { title: "🍱 上野百年鰻魚老店", tag: "上野", area: "ueno", satisfaction: 30, cost: 12000, steps: 1500, desc: "米其林名店，若在淺草後觸發順路" },
+      shibuya: { title: "🛍️ 澀谷十字路口掃街", tag: "澀谷", area: "shibuya", satisfaction: 25, cost: 15000, steps: 7200, desc: "潮流打卡，但步數極多" },
+      skytree_cafe: { title: "☕ 押上高空下午茶", tag: "押上", area: "oshiage", satisfaction: 20, cost: 4000, steps: 500, desc: "高空休息，無縫銜接晚餐" },
+      talk_defense: { title: "🛡️ 私房深度走讀話術", tag: "話術", area: "skill", satisfaction: 15, cost: 0, steps: 0, desc: "化解步數客訴" },
+      vip_van: { title: "🚐 全程 Alphard 包車", tag: "全區", area: "vip", satisfaction: 40, cost: 18000, steps: 0, desc: "尊榮滿點，跨區零扣分" }
+    };
 
-      document.getElementById('stat-gold').innerText = `¥${partyState.gold.toLocaleString()}`;
+    function switchGameMode(mode) {
+      activeMode = mode;
+      const soloBtn = document.getElementById('tab-solo-btn');
+      const multiBtn = document.getElementById('tab-multi-btn');
+      const soloView = document.getElementById('solo-mode-view');
+      const multiView = document.getElementById('multi-mode-view');
+
+      if (mode === 'solo') {
+        soloBtn.className = "px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md";
+        multiBtn.className = "px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-white";
+        soloView.classList.remove('hidden');
+        soloView.classList.add('flex');
+        multiView.classList.add('hidden');
+        multiView.classList.remove('flex');
+        showToast("切換至【單人模式：社畜旅行社業績尖塔】", 'fa-briefcase');
+      } else {
+        multiBtn.className = "px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md";
+        soloBtn.className = "px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-400 hover:text-white";
+        multiView.classList.remove('hidden');
+        multiView.classList.add('flex');
+        soloView.classList.add('hidden');
+        soloView.classList.remove('flex');
+        showToast("切換至【多人模式：主策劃 vs 搞事天團 (半合作)】", 'fa-users-viewfinder');
+      }
     }
 
-    function renderTimeline(routeKey) {
-      partyState.activeRoute = routeKey;
-      const data = routeSchedules[routeKey];
-      document.getElementById('current-timeline-tag').innerText = data.tag;
-      document.getElementById('current-timeline-title').innerText = data.title;
+    // ================= 單人模式邏輯 =================
+    function commitCardToSlot(cardKey) {
+      const card = cardDatabase[cardKey];
+      // 尋找第一個空槽位
+      let targetSlot = null;
+      if (!soloState.slots.morning) targetSlot = 'morning';
+      else if (!soloState.slots.lunch) targetSlot = 'lunch';
+      else if (!soloState.slots.afternoon) targetSlot = 'afternoon';
+      else {
+        showToast("所有時段槽位皆已滿！可點擊清空重排或直接提交 PR", 'fa-triangle-exclamation');
+        return;
+      }
 
-      const container = document.getElementById('spire-timeline-list');
-      container.innerHTML = '';
+      soloState.slots[targetSlot] = card;
+      updateSoloSlotsUI();
+      checkSoloCombos();
+      showToast(`已將【${card.title}】Commit 掛載至 ${targetSlot === 'morning' ? '上午' : targetSlot === 'lunch' ? '午餐' : '下午'}！`, 'fa-code-commit');
+    }
 
-      data.items.forEach(item => {
-        const div = document.createElement('div');
-        div.className = item.locked
-          ? "p-3.5 rounded-xl bg-rose-950/20 border border-rose-500/40 shadow-inner"
-          : "p-3.5 rounded-xl bg-slate-950/80 border border-slate-800";
+    function updateSoloSlotsUI() {
+      ['morning', 'lunch', 'afternoon'].forEach(slotKey => {
+        const slotEl = document.getElementById(`slot-${slotKey}`);
+        const contentEl = document.getElementById(`slot-content-${slotKey}`);
+        const card = soloState.slots[slotKey];
 
-        div.innerHTML = `
-          <div class="flex items-center justify-between text-xs">
-            <span class="font-mono ${item.locked ? 'text-rose-400 font-bold' : 'text-amber-400 font-semibold'}">${item.time}</span>
-            <span class="${item.locked ? 'text-rose-300 font-bold' : 'text-slate-400'}">
-              ${item.icon} ${item.type}
-            </span>
-          </div>
-          <div class="flex items-center justify-between mt-1">
-            <h4 class="font-bold text-sm ${item.locked ? 'text-white' : 'text-slate-100'}">${item.title}</h4>
-            ${item.stat ? `<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-amber-300">${item.stat}</span>` : ''}
-          </div>
-          <p class="text-xs text-slate-400 mt-1">${item.desc}</p>
-        `;
-        container.appendChild(div);
+        if (card) {
+          slotEl.className = "slot-filled rounded-xl p-3 min-h-[130px] flex flex-col justify-between transition-all border-cyan-500/60";
+          contentEl.innerHTML = `
+            <div class="text-left">
+              <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300">${card.tag}</span>
+              <h5 class="font-bold text-xs text-white mt-1">${card.title}</h5>
+              <p class="text-[10px] text-slate-400 mt-0.5 leading-snug">${card.desc}</p>
+            </div>
+          `;
+        } else {
+          slotEl.className = "slot-empty rounded-xl p-3 min-h-[130px] flex flex-col justify-between transition-all";
+          contentEl.innerHTML = `<span class="text-slate-600 text-xs">點擊下方卡牌掛載</span>`;
+        }
       });
     }
 
-    function selectMapRoute(route) {
-      const cardA = document.getElementById('node-card-daiba');
-      const cardB = document.getElementById('node-card-yokohama');
-      const lineA = document.getElementById('svg-line-a');
-      const lineB = document.getElementById('svg-line-b');
-      const lineABoss = document.getElementById('svg-line-a-boss');
-      const lineBBoss = document.getElementById('svg-line-b-boss');
+    function checkSoloCombos() {
+      let satisfactionBonus = 0;
+      let totalSatisfaction = 35;
+      let totalCost = 24000;
+      let comboDesc = "尚無連鎖加成";
 
-      if (route === 'daiba') {
-        cardA.classList.add('node-active', 'border-cyan-400');
-        cardA.classList.remove('border-slate-700');
-        cardB.classList.remove('node-active', 'border-violet-400');
-        cardB.classList.add('border-slate-700');
+      // 計算槽位內所有卡片
+      Object.values(soloState.slots).forEach(c => {
+        if (c) {
+          totalSatisfaction += c.satisfaction;
+          totalCost += c.cost;
+        }
+      });
 
-        lineA.setAttribute('stroke-opacity', '1');
-        lineABoss.setAttribute('stroke-opacity', '1');
-        lineB.setAttribute('stroke-opacity', '0.3');
-        lineBBoss.setAttribute('stroke-opacity', '0.3');
-
-        partyState.hp = 76;
-        partyState.sanity = 85;
-        showToast("已切換爬塔路線：分支 A (台場進攻流)");
-      } else if (route === 'yokohama') {
-        cardB.classList.add('node-active', 'border-violet-400');
-        cardB.classList.remove('border-slate-700');
-        cardA.classList.remove('node-active', 'border-cyan-400');
-        cardA.classList.add('border-slate-700');
-
-        lineB.setAttribute('stroke-opacity', '1');
-        lineBBoss.setAttribute('stroke-opacity', '1');
-        lineA.setAttribute('stroke-opacity', '0.3');
-        lineABoss.setAttribute('stroke-opacity', '0.3');
-
-        partyState.hp = 88;
-        partyState.sanity = 95;
-        showToast("已切換爬塔路線：分支 B (橫濱防禦流)");
+      // 檢查連鎖：若 morning 是淺草，lunch 是上野 -> 順路加成
+      if (soloState.slots.morning && soloState.slots.morning.area === 'asakusa' &&
+          soloState.slots.lunch && soloState.slots.lunch.area === 'ueno') {
+        satisfactionBonus += 15;
+        comboDesc = "⚡ 淺草 ➔ 上野【順路紅利加成】：省去地鐵轉乘，婆婆心情大好！";
       }
 
-      updateStatsUI();
-      renderTimeline(route);
-    }
-
-    function confirmRoute(route) {
-      closeSpireDiffModal();
-      selectMapRoute(route);
-      showToast(`已成功將【${route === 'daiba' ? '台場路線' : '橫濱麵包超人路線'}】定案 Merge 進主線爬塔！`, 'fa-code-merge');
-    }
-
-    // 卡牌操作
-    function playCard(cardType) {
-      if (cardType === 'taxi') {
-        partyState.gold -= 2800;
-        partyState.hp = Math.min(100, partyState.hp + 18);
-        showToast("打出【🚕 GO 計程車】！扣除 ¥2,800，全隊體力恢復 +18 HP", 'fa-taxi');
-      } else if (cardType === 'pudding') {
-        partyState.gold -= 400;
-        partyState.sanity = Math.min(100, partyState.sanity + 25);
-        showToast("打出【🍮 布丁安撫術】！二寶理智線恢復 +25%，心情極佳！", 'fa-ice-cream');
-      } else if (cardType === 'cafe') {
-        partyState.gold -= 1200;
-        partyState.hp = Math.min(100, partyState.hp + 12);
-        partyState.sanity = Math.min(100, partyState.sanity + 15);
-        showToast("打出【☕ 星巴克營火】！全員原地休整 40 分鐘，精神大振！", 'fa-mug-hot');
+      // 檢查若下午是澀谷 -> 步數過多扣理智懲罰
+      if (soloState.slots.afternoon && soloState.slots.afternoon.area === 'shibuya') {
+        comboDesc = "⚠️ 澀谷暴走引爆【痛風客訴】：步數破表，婆婆向老闆抱怨！";
+        soloState.mentalHp = Math.max(20, soloState.mentalHp - 15);
       }
-      updateStatsUI();
+
+      totalSatisfaction += satisfactionBonus;
+      soloState.satisfaction = Math.min(100, totalSatisfaction);
+      soloState.budgetCost = totalCost;
+
+      // 更新介面
+      document.getElementById('solo-satisfaction-text').innerText = `${soloState.satisfaction} / 100`;
+      document.getElementById('solo-satisfaction-bar').style.width = `${soloState.satisfaction}%`;
+      document.getElementById('solo-budget-cost').innerText = `¥${soloState.budgetCost.toLocaleString()}`;
+      document.getElementById('solo-hp-text').innerText = `${soloState.mentalHp} / 100`;
+      document.getElementById('solo-hp-bar').style.width = `${soloState.mentalHp}%`;
+
+      document.getElementById('combo-desc').innerText = comboDesc;
+      document.getElementById('combo-bonus').innerText = `+${satisfactionBonus} 滿意度`;
     }
 
-    // 彈窗開關
-    function openSpireDiffMatrix() {
-      document.getElementById('spire-diff-modal').classList.remove('hidden');
-    }
-    function closeSpireDiffModal() {
-      document.getElementById('spire-diff-modal').classList.add('hidden');
-    }
-
-    function triggerCurseEmergency() {
-      document.getElementById('curse-modal').classList.remove('hidden');
-    }
-    function closeCurseModal() {
-      document.getElementById('curse-modal').classList.add('hidden');
+    function soloRebase() {
+      // 一鍵優化排序 (Rebase)
+      soloState.slots.morning = cardDatabase.rickshaw;
+      soloState.slots.lunch = cardDatabase.eel;
+      soloState.slots.afternoon = cardDatabase.skytree_cafe;
+      updateSoloSlotsUI();
+      checkSoloCombos();
+      showToast("執行 Git Rebase！已將行程自動重構為最佳順路動線：淺草 ➔ 上野 ➔ 押上！", 'fa-shuffle');
     }
 
-    function resolveCurse() {
-      closeCurseModal();
-      partyState.hp = 65;
-      partyState.sanity = 75;
-      updateStatsUI();
-      renderTimeline('hotfix');
-      showToast("🚨 Hotfix 成功！已保住 18:30 晴空塔燒肉，下午無縫切換休養回血！", 'fa-wand-magic-sparkles');
+    function clearSlots() {
+      soloState.slots.morning = null;
+      soloState.slots.lunch = null;
+      soloState.slots.afternoon = null;
+      updateSoloSlotsUI();
+      checkSoloCombos();
+      showToast("已清空時間槽位", 'fa-trash');
     }
 
-    function toggleRainFallback() {
-      renderTimeline('rain');
-      showToast("已啟動雨備影子方案：池袋太陽城水族館！", 'fa-umbrella');
-    }
-
-    function drawRandomCard() {
-      document.getElementById('event-modal').classList.remove('hidden');
-    }
-    function closeEventModal() {
-      document.getElementById('event-modal').classList.add('hidden');
-    }
-    function acceptEventReward() {
-      partyState.gold -= 600;
-      partyState.hp = Math.min(100, partyState.hp + 15);
-      partyState.sanity = Math.min(100, partyState.sanity + 20);
-      updateStatsUI();
-      closeEventModal();
-      showToast("奇遇事件解決：享用熱騰騰炭烤鯛魚燒，體力與心情大提升！", 'fa-fish');
-    }
-
-    function inspectNode(nodeType) {
-      if (nodeType === 'boss') {
-        showToast("👑 今日核心 Boss：18:30 敘敘苑燒肉。所有分支皆收斂於此！", 'fa-crown');
-      } else if (nodeType === 'fork') {
-        openSpireDiffMatrix();
-      } else if (nodeType === 'start') {
-        showToast("⛺ 營火起點：上野飯店。推車與防走失繩已整備。", 'fa-campground');
+    function submitClientPR() {
+      if (soloState.satisfaction >= 80) {
+        openResultModal(
+          "🎉 提案成交！Pull Request Merged！",
+          "太神了！這套行程既滿足了婆婆免步數尊榮感，又帶老公開心吃到頂級鰻魚與燒肉！客戶在老闆面前大加讚賞，你成功通過了 Floor 2 挑戰！",
+          `<div>提成獎金: <strong class="text-emerald-400 font-bold">+¥18,000</strong></div>
+           <div>KPI 貢獻: <strong class="text-amber-400 font-bold">+¥260,000 (已達 68%)</strong></div>
+           <div>解鎖獎勵牌: <strong class="text-purple-300 font-bold">[私人包直升機預約券]</strong></div>`
+        );
+      } else {
+        openResultModal(
+          "❌ 提案遭客戶退件 (Changes Requested)",
+          "客戶滿意度僅達到 " + soloState.satisfaction + "% (門檻需 80%)！婆婆抱怨行程太累或太單調。請打出【Git Rebase】調整為淺草➔上野順路動線，或使用【Alphard 包車】破局！",
+          `<div>老闆責備扣血: <strong class="text-rose-400 font-bold">-10 理智 (Mental HP)</strong></div>`
+        );
+        soloState.mentalHp = Math.max(10, soloState.mentalHp - 10);
+        document.getElementById('solo-hp-text').innerText = `${soloState.mentalHp} / 100`;
+        document.getElementById('solo-hp-bar').style.width = `${soloState.mentalHp}%`;
       }
     }
 
-    function handleSpireCommand() {
-      const val = document.getElementById('spire-input').value;
-      if (!val) return;
-      showToast(`AI 已受理指令「${val}」，已在地圖樹上生成新推演節點！`, 'fa-wand-magic-sparkles');
-      document.getElementById('spire-input').value = '';
+    // ================= 多人模式邏輯 =================
+    function mergePR(sender) {
+      if (sender === 'wife') {
+        multiState.remainingTime -= 45;
+        multiState.wifeScore += 1;
+        document.getElementById('wife-progress').innerText = `${multiState.wifeScore} / 2 達成`;
+        showToast("主策劃 Merge 了老婆的免稅店 PR！老婆滿意度大增，全團時間扣減 45 分鐘", 'fa-code-merge');
+      } else if (sender === 'child') {
+        multiState.remainingTime -= 25;
+        multiState.childScore += 1;
+        document.getElementById('child-progress').innerText = `${multiState.childScore} / 2 達成`;
+        showToast("主策劃 Merge 了二寶的扭蛋 PR！全家換來短暫和平，時間扣減 25 分鐘", 'fa-code-merge');
+      }
+      updateMultiUI();
+      checkMultiStatus();
     }
 
-    function resetSpire() {
-      selectMapRoute('daiba');
-      partyState.hp = 76;
-      partyState.sanity = 85;
-      partyState.gold = 18500;
-      updateStatsUI();
-      showToast("已重置尖塔冒險狀態！", 'fa-rotate-right');
+    function rejectPR(sender) {
+      if (sender === 'wife') {
+        multiState.partyMood -= 20;
+        showToast("主策劃 Reject 了老婆的 PR！老婆開啟碎念模式，家庭氣氛值 -20%", 'fa-ban');
+      } else if (sender === 'child') {
+        multiState.partyMood -= 25;
+        showToast("主策劃 Reject 了二寶的 PR！二寶在商場直接大哭倒地，氣氛值 -25%", 'fa-face-sad-tear');
+      }
+      updateMultiUI();
+      checkMultiStatus();
+    }
+
+    function compromisePR(sender) {
+      multiState.remainingTime -= 10;
+      multiState.partyMood += 5;
+      showToast("主策劃打出【條件安撫卡】！用星巴克與布丁換取 10 分鐘小停頓，成功拆彈！", 'fa-mug-hot');
+      updateMultiUI();
+      checkMultiStatus();
+    }
+
+    function dadForcePush() {
+      multiState.remainingTime = Math.min(240, multiState.remainingTime + 35);
+      showToast("⚡ 苦逼爸爸發動【Git Force Push】！直接豪邁招手叫計程車直達下一站，硬生生追回 35 分鐘進度！", 'fa-bolt');
+      updateMultiUI();
+    }
+
+    function triggerTeammatePR(type) {
+      if (type === 'wife_cosmetics') {
+        showToast("👩 老婆又丟出了一張 PR：【松本清對面還有大國藥妝想比價】！", 'fa-bag-shopping');
+      } else if (type === 'child_tantrum') {
+        showToast("👶 二寶又在地上翻滾丟出 PR：【不給我買自動販賣機冰棒我不走】！", 'fa-ice-cream');
+      } else if (type === 'friend_photo') {
+        showToast("📸 朋友丟出 PR：【路口這個逆光角度太神了，等我換定焦鏡頭】！", 'fa-camera');
+      }
+    }
+
+    function updateMultiUI() {
+      document.getElementById('multi-time-remaining').innerText = `剩餘時間：${multiState.remainingTime} 分鐘`;
+      document.getElementById('multi-mood-text').innerText = `${multiState.partyMood}% ${multiState.partyMood > 60 ? '(和樂融融)' : multiState.partyMood > 30 ? '(緊張)' : '(即將冷戰崩潰)'}`;
+      document.getElementById('multi-mood-bar').style.width = `${Math.max(0, multiState.partyMood)}%`;
+    }
+
+    function checkMultiStatus() {
+      if (multiState.remainingTime <= 0) {
+        openResultModal(
+          "💀 全團超時！晴空塔燒肉訂位被取消！",
+          "天啊！因為途中太多臨時起意與爭執，全家人抵達晴空塔時已經 18:50，餐廳已將珍貴的包廂釋出給現場候位！今晚全家只能在街頭超商吃冷飯糰……【全員皆輸】！",
+          `<div>大目標失敗: <strong class="text-rose-400 font-bold">Hard Lock 違約</strong></div>`
+        );
+      } else if (multiState.partyMood <= 0) {
+        openResultModal(
+          "💥 家庭氣氛歸零！觸發全團冷戰！",
+          "主策劃駁回了太多請求，大家在路邊大吵一架，整趟旅行氣氛降至冰點！",
+          `<div>失敗原因: <strong class="text-rose-400 font-bold">Mood 崩盤</strong></div>`
+        );
+      } else if (multiState.wifeScore >= 2 && multiState.remainingTime > 30) {
+        openResultModal(
+          "🏆 大獲全勝！完美抵達晴空塔燒肉！",
+          "奇蹟！主策劃在時間大限前精準調度，全員在 18:15 完好無損抵達 30F 燒肉包廂！同時老婆完成了 2 次免稅購物願望，獲封今日【旅行大贏家 MVP】！",
+          `<div>剩餘充裕時間: <strong class="text-emerald-400 font-bold">${multiState.remainingTime} 分鐘</strong></div>
+           <div>最終家庭和樂度: <strong class="text-amber-300 font-bold">${multiState.partyMood}%</strong></div>`
+        );
+      }
+    }
+
+    // 通用彈窗與通知
+    function openResultModal(title, desc, statsHtml) {
+      document.getElementById('result-modal-title').innerText = title;
+      document.getElementById('result-modal-desc').innerText = desc;
+      document.getElementById('result-modal-stats').innerHTML = statsHtml;
+      document.getElementById('result-modal').classList.remove('hidden');
+    }
+
+    function closeResultModal() {
+      document.getElementById('result-modal').classList.add('hidden');
+    }
+
+    function resetCurrentMode() {
+      if (activeMode === 'solo') {
+        soloState.mentalHp = 75;
+        soloState.satisfaction = 35;
+        soloState.slots = { morning: null, lunch: null, afternoon: null };
+        updateSoloSlotsUI();
+        checkSoloCombos();
+        showToast("已重設單人模式狀態", 'fa-rotate-right');
+      } else {
+        multiState.remainingTime = 210;
+        multiState.partyMood = 80;
+        multiState.wifeScore = 1;
+        multiState.childScore = 0;
+        updateMultiUI();
+        showToast("已重設多人模式狀態", 'fa-rotate-right');
+      }
     }
 
     function showToast(msg, icon = 'fa-circle-check') {
@@ -862,9 +927,6 @@
         toast.classList.remove('flex');
       }, 3500);
     }
-
-    // 初始化
-    selectMapRoute('daiba');
   </script>
 </body>
 </html>
