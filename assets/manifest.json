@@ -1,0 +1,25 @@
+{
+  "background": "assets/art/office.png",
+  "portraits": {
+    "calm": "assets/art/customer-calm.png",
+    "doubt": "assets/art/customer-doubt.png",
+    "angry": "assets/art/customer-angry.png",
+    "interested": "assets/art/customer-interested.png",
+    "happy": "assets/art/customer-happy.png"
+  },
+  "cards": {
+    "temple": "assets/art/cards/temple.png",
+    "park": "assets/art/cards/park.png",
+    "tower": "assets/art/cards/tower.png",
+    "shopping": "assets/art/cards/shopping.png",
+    "bento": "assets/art/cards/bento.png",
+    "eel": "assets/art/cards/eel.png",
+    "lunch": "assets/art/cards/lunch.png",
+    "cafe": "assets/art/cards/cafe.png",
+    "bench": "assets/art/cards/bench.png",
+    "lounge": "assets/art/cards/lounge.png",
+    "taxi": "assets/art/cards/taxi.png",
+    "car": "assets/art/cards/car.png"
+  },
+  "font": "assets/fonts/NotoSansTC.ttf"
+}
